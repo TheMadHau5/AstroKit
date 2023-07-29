@@ -3,12 +3,19 @@ import mediapipe as mp
 import numpy as np
 from flask import Flask,request,jsonify,render_template,Response
 import json
+import platform
 
 # decl glob
 mp_drawing = mp.solutions.drawing_utils
 mp_pose = mp.solutions.pose
 app = Flask(__name__)
-cap = cv2.VideoCapture(-1)
+
+camid = -1
+
+if platform.system() == "Darwin": 
+    camid = 0
+
+cap = cv2.VideoCapture(camid)
 
 directions = {
     "left": "SOMETHING IS FUCKED UP",
