@@ -17,16 +17,12 @@ directions = {
 
 
 
-def calculate_angle(shoulder,elbow,wrist):
-    a = np.array(shoulder) # First
-    b = np.array(elbow) # Mid
-    c = np.array(wrist) # End
-    
-    radians = np.arctan2(c[1]-b[1], c[0]-b[0]) - np.arctan2(a[1]-b[1], a[0]-b[0])
-    angle = np.abs(radians*180.0/np.pi)
+def calculate_angle(a,b,c):
+    radians = np.pi + np.arctan2(c[1]-b[1], c[0]-b[0]) - np.arctan2(b[1]-a[1], b[0]-a[0])
+    angle = radians*180.0/np.pi
     
     if angle >180.0:
-        angle = 360-angle   
+        angle = angle - 360
         
     return angle
 
@@ -61,18 +57,22 @@ def generate_frames():
                 landmarks = results.pose_landmarks.landmark
                 
                 # Get coordinates
+                hip_l = [landmarks[mp_pose.PoseLandmark.LEFT_HIP.value].x,landmarks[mp_pose.PoseLandmark.LEFT_HIP.value].y]
                 shoulder_l = [landmarks[mp_pose.PoseLandmark.LEFT_SHOULDER.value].x,landmarks[mp_pose.PoseLandmark.LEFT_SHOULDER.value].y]
                 elbow_l = [landmarks[mp_pose.PoseLandmark.LEFT_ELBOW.value].x,landmarks[mp_pose.PoseLandmark.LEFT_ELBOW.value].y]
                 wrist_l = [landmarks[mp_pose.PoseLandmark.LEFT_WRIST.value].x,landmarks[mp_pose.PoseLandmark.LEFT_WRIST.value].y]
                 
+                hip_r = [landmarks[mp_pose.PoseLandmark.RIGHT_HIP.value].x,landmarks[mp_pose.PoseLandmark.RIGHT_HIP.value].y]
                 shoulder_r = [landmarks[mp_pose.PoseLandmark.RIGHT_SHOULDER.value].x,landmarks[mp_pose.PoseLandmark.RIGHT_SHOULDER.value].y]
                 elbow_r = [landmarks[mp_pose.PoseLandmark.RIGHT_ELBOW.value].x,landmarks[mp_pose.PoseLandmark.RIGHT_ELBOW.value].y]
                 wrist_r = [landmarks[mp_pose.PoseLandmark.RIGHT_WRIST.value].x,landmarks[mp_pose.PoseLandmark.RIGHT_WRIST.value].y]
                 # Calculate angle
-                angle_l = calculate_angle(shoulder_l, elbow_l, wrist_l)
-                angle_r = calculate_angle(shoulder_r, elbow_r, wrist_r)
+                elbow_angle_l = calculate_angle(wrist_l, elbow_l, shoulder_l)
+                elbow_angle_r = calculate_angle(shoulder_r, elbow_r, wrist_r)
+                shoulder_angle_l = calculate_angle(elbow_l, shoulder_l, hip_l)
+                shoulder_angle_r = calculate_angle(hip_r, shoulder_r, elbow_r)
                 # Visualize angle
-                #print(angle)
+                print(elbow_angle_l, elbow_angle_r, shoulder_angle_l, shoulder_angle_r)
                 
                 direction_l = arms_facing_direction(shoulder_l, elbow_l, wrist_l)
                 direction_r = arms_facing_direction(shoulder_r, elbow_r, wrist_r)
