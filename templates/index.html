@@ -1,15 +1,35 @@
 <!DOCTYPE html>
-<html>
-
-
-  <body>
-    <p>asdf</p>
-    <h1>Live streaming</h1>
-    <div>
-        <img src="{{ url_for('video') }}" width="50%"/>
-    </div>
-            
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>AstroKit</title>
+        <link rel="stylesheet" href="/static/dist/output.css" />
+    </head>
+    <body class="p-6 min-h-screen bg-gray-950 flex flex-col">
+        <section class="flex justify-between items-center py-6 px-12 mb-10">
+            <div class="w-1/3 min-h-full items-center justify-center px-6">
+                <progress
+                    class="progress w-full items-center mx-auto justify-center"
+                ></progress>
+            </div>
+            <div
+                class="w-1/3 items-center text-4xl text-gray-200 text-center border-x-2 border-gray-500"
+            >
+                Exercise Title
+            </div>
+            <div class="w-1/3 items-center justify-center flex">
+                <img
+                    src="https://media.istockphoto.com/id/621597534/photo/rocking-astronaut-3d-render.jpg?s=612x612&w=0&k=20&c=emqBQYYXXSROroIUka4aZN08FTYbh3T4uZY18s_pAIQ="
+                    class="w-1/2 mx-auto"
+                />
+            </div>
+        </section>
+        <div class="flex w-[75%] mx-auto mb-4">
+            <img
+                src="{{ url_for('video') }}"
+                class="w-1/2 mx-auto border-4 border-indigo-500 rounded-2xl"
+            />
+        </div>
     </body>
-
-
 </html>
