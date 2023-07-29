@@ -2,12 +2,20 @@ import cv2
 import mediapipe as mp
 import numpy as np
 from flask import Flask,request,jsonify,render_template,Response
+import json
 
 # decl glob
 mp_drawing = mp.solutions.drawing_utils
 mp_pose = mp.solutions.pose
 app = Flask(__name__)
 cap = cv2.VideoCapture(-1)
+
+directions = {
+    "left": "SOMETHING IS FUCKED UP",
+    "right": "SOMETHING IS ACTUALLY FUCKED"
+}
+
+
 
 def calculate_angle(shoulder,elbow,wrist):
     a = np.array(shoulder) # First
@@ -69,6 +77,8 @@ def generate_frames():
                 direction_l = arms_facing_direction(shoulder_l, elbow_l, wrist_l)
                 direction_r = arms_facing_direction(shoulder_r, elbow_r, wrist_r)
                 print(direction_l, direction_r)
+                directions['left'] = direction_l
+                directions['right'] = direction_r
                 #print("Direction:", direction)
                 # Visualize angleS
                 cv2.putText(image, str(direction_l) + "Left", 
@@ -116,6 +126,10 @@ def generate_frames():
 @app.route('/')
 def index():
     return render_template('index.html')
+
+@app.route('/directions')
+def directions_func():
+    return json.dumps(directions)
 
 @app.route('/video')
 def video():
