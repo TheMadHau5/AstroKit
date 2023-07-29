@@ -31,5 +31,15 @@
                 class="w-1/2 mx-auto border-4 border-indigo-500 rounded-2xl"
             />
         </div>
+<script>
+      async function updateDirections() {
+          const response = await fetch('/directions'); // Make an AJAX request to the Flask route that provides direction information
+          const directionInfo = await response.json();
+          console.log(directionInfo)
+      }
+
+      // Update directions every 1 second
+      setInterval(updateDirections, 1000);
+  </script>
     </body>
 </html>
