@@ -13,10 +13,10 @@
                     class="progress w-full items-center mx-auto justify-center"
                 ></progress>
             </div>
-            <div
-                class="w-1/3 items-center text-4xl text-gray-200 text-center border-x-2 border-gray-500"
-            >
-                Exercise Title
+            <div class="w-1/3 items-center border-x-2 border-gray-500">
+                <h1 class="text-4xl text-gray-200 text-center">
+                    Exercise Title
+                </h1>
             </div>
             <div class="w-1/3 items-center justify-center flex">
                 <img
@@ -31,15 +31,14 @@
                 class="w-1/2 mx-auto border-4 border-indigo-500 rounded-2xl"
             />
         </div>
-<script>
-      async function updateDirections() {
-          const response = await fetch('/directions'); // Make an AJAX request to the Flask route that provides direction information
-          const directionInfo = await response.json();
-          console.log(directionInfo)
-      }
+        <script>
+            async function updateDirections() {
+                const response = await fetch('/directions'); // Make an AJAX request to the Flask route that provides direction information
+                const directionInfo = await response.json();
+            }
 
-      // Update directions every 1 second
-      setInterval(updateDirections, 1000);
-  </script>
+            // Update directions every 1 second
+            setInterval(updateDirections, 1000);
+        </script>
     </body>
 </html>
