@@ -118,7 +118,7 @@ def generate_frames():
                     right_ear = landmarks[mp_pose.PoseLandmark.RIGHT_EAR.value]
                     distance = np.sqrt(
                         ((right_ear.x - left_ear.x) ** 2) + ((right_ear.y - left_ear.y) ** 2))
-                    optimal_distance = 0.058  # Desired optimal distance
+                    optimal_distance = 0.116  # Desired optimal distance
                     scaling_factor = distance/optimal_distance  # Calculate the scaling factor
 
                     if scaling_factor <= 0:
@@ -192,6 +192,8 @@ def update_setting():
         to_run.landmarks_debug = ops["landmarks_debug"]
     if "helmet" in ops:
         to_run.helmet = ops["helmet"]
+    if "reset" in ops:
+        to_run.__init__("curl")
 
     return "success"
 
