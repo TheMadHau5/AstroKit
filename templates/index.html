@@ -6,7 +6,7 @@
         <title>AstroKit</title>
         <link rel="stylesheet" href="/static/dist/output.css" />
     </head>
-    <body class="p-6 bg-gray-600 flex flex-col h-screen">
+    <body class="p-6 bg-gray-600 flex flex-col min-h-screen">
         <section
             class="text-gray-300 bg-gray-900 body-font rounded-2xl justify-center items-center pb-10"
         >
@@ -61,7 +61,13 @@
             <div
                 class="p-2 w-[90%] mx-auto flex space-x-20 items-center justify-center"
             >
-                <div class="flex flex-col space-y-5 w-[20%]">
+                <div class="w-1/4 flex flex-col space-y-5">
+                    <button
+                        class="p-2 bg-gray-600 text-white scale-110 ease-in-out transition duration-200 inline-flex rounded-xl items-center justify-between gap-2"
+                    >
+                        <a>View Helmet</a>
+                        <input type="checkbox" class="toggle toggle-success" />
+                    </button>
                     <button
                         class="p-2 bg-gray-600 text-white scale-110 ease-in-out transition duration-200 inline-flex rounded-xl items-center justify-between gap-2"
                     >
@@ -108,14 +114,14 @@
                     </div>
                 </div>
                 <div
-                    class="h-full bg-gray-800 bg-opacity-40 px-4 py-10 mb-2 rounded-lg overflow-hidden text-center relative flex"
+                    class="w-1/2 bg-gray-800 bg-opacity-40 px-4 py-10 mb-2 rounded-lg overflow-hidden text-center relative flex"
                 >
                     <img
                         src="{{ url_for('video') }}"
-                        class="w-[85%] mx-auto rounded-2xl -scale-x-100"
+                        class="w-[90%] mx-auto rounded-2xl -scale-x-100"
                     />
                 </div>
-                <div class="flex flex-col space-y-10">
+                <div class="w-1/4 flex flex-col space-y-10">
                     <button
                         class="px-4 py-2 bg-red-500 text-white hover:scale-110 ease-in-out transition duration-200 rounded-xl"
                         onclick="prevButton()"
@@ -136,6 +142,7 @@
             let exc = null;
             let auto = true;
             let landmarks_debug = true;
+            let helmet = false;
             const exercises = {
                 press: "Shoulder Press",
                 latr: "Lateral Raises",
@@ -197,6 +204,11 @@
             function toggleLandmarks() {
                 landmarks_debug = !landmarks_debug;
                 updateSetting({landmarks_debug});
+            }
+
+            function toggleHelmet() {
+                helmet = !helmet;
+                updateSetting({helmet});
             }
 
             // Update directions every 1 second
