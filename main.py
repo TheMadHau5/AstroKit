@@ -19,9 +19,7 @@ cap = cv2.VideoCapture(camid)
 
 
 class Exercise:
-    def __init__(
-        self, exercise: Optional[str] = None, landmarks_debug: Optional[bool] = True
-    ):
+    def __init__(self, exercise: Optional[str] = None):
         self.exercise = exercise
         self.reps = 0
         self.score = 0
