@@ -36,7 +36,7 @@ def calculate_angle(a,b,c):
 def arms_facing_direction(shoulder, elbow, wrist):
     shoulder_y, elbow_y, wrist_y = shoulder[1], elbow[1], wrist[1]
     #print(shoulder_y, elbow_y, wrist_y)
-    if abs(wrist_y - shoulder_y) < 0.07:
+    if abs(wrist_y - shoulder_y) < 0.1:
         return "Parallel"
     elif wrist_y < shoulder_y:
         return "Up"
