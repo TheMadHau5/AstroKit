@@ -17,7 +17,10 @@
                             class="h-full bg-gray-800 bg-opacity-40 px-8 py-16 rounded-lg overflow-hidden text-center relative items-center justify-center"
                         >
                             <progress
-                                class="progress w-full items-center mx-auto justify-center"
+                                class="progress h-10 w-full items-center mx-auto justify-center"
+                                id="progress"
+                                value="0"
+                                max="10"
                             ></progress>
                         </div>
                     </div>
@@ -26,10 +29,21 @@
                             class="h-full bg-gray-800 bg-opacity-40 px-8 py-16 rounded-lg overflow-hidden text-center relative items-center justify-center"
                         >
                             <h1
-                                class="title-font text-3xl font-medium text-white mb-3"
+                                class="title-font text-4xl font-semibold text-white mb-3"
+                                id="title"
                             >
                                 Exercise Title
                             </h1>
+                            <div
+                                class="flex flex-row items-center justify-center text-center gap-x-4"
+                            >
+                                <h3 id="stance" class="text-xl text-gray-300">
+                                    Please wait..
+                                </h3>
+                                <h3 id="reps" class="text-xl text-gray-300">
+                                    0/10
+                                </h3>
+                            </div>
                         </div>
                     </div>
                     <div class="p-4 lg:w-1/3 items-center justify-center">
@@ -44,22 +58,47 @@
                     </div>
                 </div>
             </div>
-            <div class="p-4 lg:w-2/3 mx-auto">
+            <div
+                class="p-4 w-[80%] mx-auto flex space-x-20 items-center justify-center"
+            >
                 <div
                     class="h-full bg-gray-800 bg-opacity-40 px-4 py-10 mb-2 rounded-lg overflow-hidden text-center relative flex"
                 >
                     <img
                         src="{{ url_for('video') }}"
-                        class="w-1/2 mx-auto rounded-2xl"
+                        class="w-[80%] mx-auto rounded-2xl"
                     />
+                </div>
+                <div class="flex flex-col space-y-10">
+                    <button
+                        class="px-4 py-2 bg-red-500 text-white hover:scale-110 ease-in-out transition duration-200 rounded-xl"
+                    >
+                        Previous
+                    </button>
+                    <button
+                        class="px-4 py-2 bg-green-500 text-white hover:scale-110 ease-in-out transition duration-200 rounded-xl"
+                    >
+                        Next
+                    </button>
                 </div>
             </div>
         </section>
         <script>
+            const exercises = {
+                press: "Shoulder Press",
+                latr: "Lateral Raises",
+                curl: "Bicep Curl",
+                jump: "Jumping Jack"
+            };
             async function updateDirections() {
                 const response = await fetch('/directions'); // Make an AJAX request to the Flask route that provides direction information
                 const directionInfo = await response.json();
-                console.log(directionInfo)
+                const { stance, reps, exercise } = directionInfo;
+
+                document.getElementById('title').innerHTML = exercises[exercise];
+                document.getElementById('stance').innerHTML = `Stance: ${stance}`;
+                document.getElementById('reps').innerHTML = `Reps: ${reps}/10`;
+                document.getElementById('progress').value = reps.toString();
             }
 
             // Update directions every 1 second
