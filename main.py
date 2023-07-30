@@ -1,7 +1,7 @@
 import cv2
 import mediapipe as mp
 import numpy as np
-from flask import Flask,request,jsonify,render_template,Response
+from flask import Flask, request, jsonify, render_template, Response
 import json
 import platform
 
@@ -21,6 +21,7 @@ if platform.system() == "Darwin":
     camid = 0
 
 cap = cv2.VideoCapture(camid)
+
 
 directions = {
     "stance": last_stance,
@@ -67,7 +68,9 @@ def count_reps(stance: str):
     elif exercise == "latr" and last_stance == "stand" and stance == "t pose":
         reps += 1
 
+
 def generate_frames():
+
     global last_stance
     global reps
     with mp_pose.Pose(min_detection_confidence=0.5, min_tracking_confidence=0.5) as pose:
@@ -156,17 +159,22 @@ def generate_frames():
         #            b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')
 
 
-@app.route('/')
+@app.route("/")
 def index():
-    return render_template('index.html')
+    return render_template("index.html")
 
-@app.route('/directions')
+
+@app.route("/directions")
 def directions_func():
     return json.dumps(directions)
 
-@app.route('/video')
-def video():
-    return Response(generate_frames(),mimetype='multipart/x-mixed-replace; boundary=frame')
 
-if __name__=="__main__":
-    app.run()#debug=True)
+@app.route("/video")
+def video():
+    return Response(
+        generate_frames(), mimetype="multipart/x-mixed-replace; boundary=frame"
+    )
+
+
+if __name__ == "__main__":
+    app.run()  # debug=True)
