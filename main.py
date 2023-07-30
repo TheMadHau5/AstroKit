@@ -25,7 +25,8 @@ class Exercise:
         self.score = 0
         self.last_stance = None
         self.stance = None
-        self.landmarks_debug = False
+        self.landmarks_debug = landmarks_debug
+        self.helmet = False
 
     def set_exercise(self, exercise):
         self.reps = 0
@@ -199,6 +200,8 @@ def update_setting():
         to_run.set_exercise(ops["exercise"])
     if "landmarks_debug" in ops:
         to_run.landmarks_debug = ops["landmarks_debug"]
+    if "helmet" in ops:
+        to_run.helmet = ops["helmet"]
 
     return "success"
 
