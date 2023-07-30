@@ -8,7 +8,7 @@
     </head>
     <body class="p-6 bg-gray-600 flex flex-col h-screen">
         <section
-            class="text-gray-300 bg-gray-900 body-font rounded-2xl justify-center items-center"
+            class="text-gray-300 bg-gray-900 body-font rounded-2xl justify-center items-center pb-10"
         >
             <div class="px-4 py-10 mx-auto">
                 <div class="flex flex-wrap">
@@ -59,8 +59,53 @@
                 </div>
             </div>
             <div
-                class="p-4 w-[80%] mx-auto flex space-x-20 items-center justify-center"
+                class="p-2 w-[90%] mx-auto flex space-x-20 items-center justify-center"
             >
+                <div class="flex flex-col space-y-5 w-[20%]">
+                    <button
+                        class="p-2 bg-gray-600 text-white scale-110 ease-in-out transition duration-200 inline-flex rounded-xl items-center justify-between gap-2"
+                    >
+                        <a>Landmarks</a>
+                        <input
+                            type="checkbox"
+                            class="toggle toggle-success"
+                            checked
+                        />
+                    </button>
+                    <button
+                        class="p-2 bg-gray-600 text-white scale-110 ease-in-out transition duration-200 inline-flex rounded-xl items-center justify-between gap-2"
+                    >
+                        <a class="mr-auto">AutoNext</a>
+                        <input
+                            type="checkbox"
+                            class="toggle toggle-success ml-auto"
+                            checked
+                            onchange="setAuto()"
+                        />
+                    </button>
+                    <div
+                        class="p-2 bg-gray-600 text-white scale-110 text-center ease-in-out transition duration-200 rounded-xl inline-block items-center justify-center gap-2"
+                    >
+                        <a class="text-center mb-2">Reps per Set</a>
+                        <input
+                            type="range"
+                            min="5"
+                            max="30"
+                            value="10"
+                            class="range"
+                            step="5"
+                            onchange="repsPerSet(this.value)"
+                        />
+                        <div class="w-full flex justify-between text-xs px-2">
+                            <span>5</span>
+                            <span>10</span>
+                            <span>15</span>
+                            <span>20</span>
+                            <span>25</span>
+                            <span>30</span>
+                        </div>
+                    </div>
+                </div>
                 <div
                     class="h-full bg-gray-800 bg-opacity-40 px-4 py-10 mb-2 rounded-lg overflow-hidden text-center relative flex"
                 >
@@ -72,11 +117,13 @@
                 <div class="flex flex-col space-y-10">
                     <button
                         class="px-4 py-2 bg-red-500 text-white hover:scale-110 ease-in-out transition duration-200 rounded-xl"
+                        onclick="prevButton()"
                     >
                         Previous
                     </button>
                     <button
                         class="px-4 py-2 bg-green-500 text-white hover:scale-110 ease-in-out transition duration-200 rounded-xl"
+                        onclick="nextButton()"
                     >
                         Next
                     </button>
@@ -84,21 +131,65 @@
             </div>
         </section>
         <script>
+            let ireps = 10;
+            let exc = null;
+            let auto = true;
             const exercises = {
                 press: "Shoulder Press",
                 latr: "Lateral Raises",
                 curl: "Bicep Curl",
-                jump: "Jumping Jack"
+                jack: "Jumping Jack"
             };
             async function updateDirections() {
-                const response = await fetch('/directions'); // Make an AJAX request to the Flask route that provides direction information
+                const response = await fetch('/tick'); // Make an AJAX request to the Flask route that provides direction information
                 const directionInfo = await response.json();
-                const { stance, reps, exercise } = directionInfo;
-
+                let { stance, reps, exercise } = directionInfo;
+                if (reps >= ireps) {
+                    if (auto) return await nextButton();
+                    else reps -= ireps;
+                }
                 document.getElementById('title').innerHTML = exercises[exercise];
+                exc = exercise;
                 document.getElementById('stance').innerHTML = `Stance: ${stance ? stance : 'N/A'}`;
-                document.getElementById('reps').innerHTML = `Reps: ${reps}/10`;
+                document.getElementById('reps').innerHTML = `Reps: ${reps}/${ireps}`;
                 document.getElementById('progress').value = reps.toString();
+            }
+
+            function repsPerSet(x) {
+                ireps = x;
+                document.getElementById('progress').max = ireps.toString();
+                updateDirections();
+            }
+
+            function nextButton () {
+                const keys = [...Object.keys(exercises)];
+                const index = keys.indexOf(exc);
+                const next = keys[(index + 1) % keys.length];
+                updateSetting({exercise: next});
+            }
+
+            function prevButton () {
+                const keys = [...Object.keys(exercises)];
+                const index = keys.indexOf(exc);
+                const prev = keys[(index - 1) % keys.length];
+                updateSetting({exercise: prev});
+            }
+
+            function updateSetting(body) {
+                fetch('/change_exercise', {
+                    body: JSON.stringify(body),
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+
+                });
+
+                updateDirections();
+            }
+
+            function setAuto() {
+                auto = !auto;
             }
 
             // Update directions every 1 second
