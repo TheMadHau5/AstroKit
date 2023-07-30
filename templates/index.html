@@ -90,7 +90,11 @@
                         class="p-2 bg-gray-600 text-white scale-110 ease-in-out transition duration-200 inline-flex rounded-xl items-center justify-between gap-2"
                     >
                         <a>View Helmet</a>
-                        <input type="checkbox" class="toggle toggle-success" onchange="toggleHelmet()" />
+                        <input
+                            type="checkbox"
+                            class="toggle toggle-success"
+                            onchange="toggleHelmet()"
+                        />
                     </button>
                     <button
                         class="p-2 bg-gray-600 text-white scale-110 ease-in-out transition duration-200 inline-flex rounded-xl items-center justify-between gap-2"
@@ -164,7 +168,11 @@
                         Finish
                     </button>
                     <dialog id="finish_modal" class="modal">
-                        <form method="dialog" class="modal-box" onsubmit="finishfr()">
+                        <form
+                            method="dialog"
+                            class="modal-box"
+                            onsubmit="finishfr()"
+                        >
                             <button
                                 class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2"
                             >
@@ -222,8 +230,6 @@
 
             "Shoulder Press": "Normal Volleyball is boring (yawn). Today, you’re going to play astronaut volleyball: You play with…comets. You and your astronaut friends love playing astronaut volleyball with these tiny celestial bodies. To practise your volleyball skills, and beat your friends (Mighty Raju, Baba Ramdev, and Tom Cruise), you can do the press exercise."
             };
-
-            var score = 0;
 
             async function tick() {
                 if (!music) {
@@ -311,12 +317,12 @@
                 document.getElementById('finish_title').innerHTML = `Congratulations! Your score is ${score}.`;
                 document.getElementById('finish_content').innerHTML = "What is your name?";
                 modal.showModal();
-
-                
-
             }
 
-            function finishfr(){
+            async function finishfr(){
+                const response = await fetch('/tick');
+                const directionInfo = await response.json();
+                const { score } = directionInfo;
                 const username = document.getElementById("username").textContent
 
                 fetch('http://10.20.89.174:9000/add_record', {
@@ -330,7 +336,6 @@
                         'Access-Control-Allow-Origin': "*",
                         'Content-Type': 'application/json'
                     }
-
                 });
             }
 
