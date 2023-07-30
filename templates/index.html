@@ -319,7 +319,7 @@
             function finishfr(){
                 const username = document.getElementById("username").textContent
 
-                fetch('http://10.20.89.174/add_record', {
+                fetch('http://10.20.89.174:9000/add_record', {
                     body: JSON.stringify({
                         name: username,
                         score: score
@@ -335,7 +335,7 @@
             }
 
             // Update directions every 1 second
-            setInterval(tick, 100);
+            setInterval(tick, 500);
         </script>
     </body>
 </html>
