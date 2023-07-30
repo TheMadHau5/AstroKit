@@ -71,22 +71,20 @@
                     <button
                         class="p-2 bg-gray-600 text-white scale-110 ease-in-out transition duration-200 inline-flex rounded-xl items-center justify-between gap-2"
                     >
-                        <a>Landmarks</a>
+                        <a>Render Wireframe</a>
                         <input
                             type="checkbox"
                             class="toggle toggle-success"
-                            checked
                             onchange="toggleLandmarks()"
                         />
                     </button>
                     <button
                         class="p-2 bg-gray-600 text-white scale-110 ease-in-out transition duration-200 inline-flex rounded-xl items-center justify-between gap-2"
                     >
-                        <a class="mr-auto">AutoNext</a>
+                        <a class="mr-auto">Switch Exercise</a>
                         <input
                             type="checkbox"
                             class="toggle toggle-success ml-auto"
-                            checked
                             onchange="setAuto()"
                         />
                     </button>
@@ -140,8 +138,8 @@
         <script>
             let ireps = 10;
             let exc = null;
-            let auto = true;
-            let landmarks_debug = true;
+            let auto = false;
+            let landmarks_debug = false;
             let helmet = false;
             const exercises = {
                 press: "Shoulder Press",
@@ -180,7 +178,8 @@
             function prevButton () {
                 const keys = [...Object.keys(exercises)];
                 const index = keys.indexOf(exc);
-                const prev = keys[(index - 1) % keys.length];
+                const newIndex = index == 0 ? keys.length - 1 : (index - 1) % keys.length;
+                const prev = keys[newIndex];
                 updateSetting({exercise: prev});
             }
 
