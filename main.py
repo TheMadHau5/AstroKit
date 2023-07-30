@@ -11,6 +11,9 @@ mp_pose = mp.solutions.pose
 app = Flask(__name__)
 last_stance = None
 reps = 0
+exercise = "latr" # curl, jack, press, latr
+landmarks_debug = True
+
 
 camid = -1
 
@@ -20,12 +23,11 @@ if platform.system() == "Darwin":
 cap = cv2.VideoCapture(camid)
 
 directions = {
-    "left": "SOMETHING IS FUCKED UP",
-    "right": "SOMETHING IS ACTUALLY FUCKED"
+    "stance": last_stance,
+    "reps": reps,
+    "exercise": exercise
 }
 
-
-exercise = "latr" # curl, jack, press, latr
 
 def calculate_angle(a,b,c):
     radians = np.pi + np.arctan2(c[1]-b[1], c[0]-b[0]) - np.arctan2(b[1]-a[1], b[0]-a[0])
@@ -64,18 +66,6 @@ def count_reps(stance: str):
         reps += 1
     elif exercise == "latr" and last_stance == "stand" and stance == "t pose":
         reps += 1
-
-
-
-def arms_facing_direction(shoulder, elbow, wrist):
-    shoulder_y, elbow_y, wrist_y = shoulder[1], elbow[1], wrist[1]
-    #print(shoulder_y, elbow_y, wrist_y)
-    if abs(wrist_y - shoulder_y) < 0.07:
-        return "Parallel"
-    elif wrist_y < shoulder_y:
-        return "Up"
-    elif wrist_y > shoulder_y:
-        return "Down"
 
 def generate_frames():
     global last_stance
@@ -118,38 +108,29 @@ def generate_frames():
                 print(elbow_angle_l, elbow_angle_r, shoulder_angle_l, shoulder_angle_r)
                 stance = get_stance(elbow_angle_l, elbow_angle_r, shoulder_angle_l, shoulder_angle_r)
                 print(stance)
+
                 if stance and stance != last_stance:
                     # do thingy
                     count_reps(stance)
                     last_stance = stance
                 print(reps)
 
-                direction_l = arms_facing_direction(shoulder_l, elbow_l, wrist_l)
-                direction_r = arms_facing_direction(shoulder_r, elbow_r, wrist_r)
-                #print(direction_l, direction_r)
-                directions['left'] = direction_l
-                directions['right'] = direction_r
-                #print("Direction:", direction)
-                # Visualize angleS
-                cv2.putText(image, str(direction_l) + "Left",
-                            tuple(np.multiply(elbow_l, [640, 480]).astype(int)),
-                            cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 2, cv2.LINE_AA
-                                    )
-                cv2.putText(image, str(direction_r) + "Right",
-                            tuple(np.multiply(elbow_r, [640, 580]).astype(int)),
-                            cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 2, cv2.LINE_AA
-                                    )
+                directions['stance'] = stance
+                directions['reps'] = reps
+                directions['exercise'] = exercise
             except AttributeError:
                 pass
             except Exception as e:
                 print(e)
 
+            
 
             # Render detections
-            mp_drawing.draw_landmarks(image, results.pose_landmarks, mp_pose.POSE_CONNECTIONS,
-                                    mp_drawing.DrawingSpec(color=(245,117,66), thickness=2, circle_radius=2),
-                                    mp_drawing.DrawingSpec(color=(245,66,230), thickness=2, circle_radius=2)
-                                    )
+            if landmarks_debug:
+                mp_drawing.draw_landmarks(image, results.pose_landmarks, mp_pose.POSE_CONNECTIONS,
+                                        mp_drawing.DrawingSpec(color=(245,117,66), thickness=2, circle_radius=2),
+                                        mp_drawing.DrawingSpec(color=(245,66,230), thickness=2, circle_radius=2)
+                                        )
 
             #cv2.imshow('Mediapipe Feed', image)
             ret,buffer = cv2.imencode('.jpg',image)

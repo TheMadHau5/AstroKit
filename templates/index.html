@@ -59,6 +59,7 @@
             async function updateDirections() {
                 const response = await fetch('/directions'); // Make an AJAX request to the Flask route that provides direction information
                 const directionInfo = await response.json();
+                console.log(directionInfo)
             }
 
             // Update directions every 1 second
