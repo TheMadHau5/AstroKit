@@ -70,11 +70,7 @@ def scoreboard_func():
 def add_func():
     data = request.get_json(force=True)
     print(data)
-    try:
-        data["score"] = int(data["score"])
-    except Exception:
-        return "KAL"
-    scoreboard.add_record(data["name"], data["score"])
+    scoreboard.add_record(data["name"], int(data["score"]))
     return "KHATAM"
 
 
