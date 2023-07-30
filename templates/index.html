@@ -179,6 +179,7 @@
                                 type="text"
                                 placeholder="Type your name here"
                                 class="input input-bordered w-full max-w-xs"
+                                id="username"
                             />
                         </form>
                     </dialog>
@@ -221,6 +222,8 @@
 
             "Shoulder Press": "Normal Volleyball is boring (yawn). Today, you’re going to play astronaut volleyball: You play with…comets. You and your astronaut friends love playing astronaut volleyball with these tiny celestial bodies. To practise your volleyball skills, and beat your friends (Mighty Raju, Baba Ramdev, and Tom Cruise), you can do the press exercise."
             };
+
+            var score = 0;
 
             async function tick() {
                 if (!music) {
@@ -305,9 +308,24 @@
 
             function finish() {
                 const modal = document.getElementById('finish_modal');
-                document.getElementById('finish_title').innerHTML = `Congratulations! Your score is X.`;
+                document.getElementById('finish_title').innerHTML = `Congratulations! Your score is ${score}.`;
                 document.getElementById('finish_content').innerHTML = "What is your name?";
                 modal.showModal();
+
+                const username = document.getElementById("username").textContent
+
+                fetch('http://10.20.89.174/add_record', {
+                    body: JSON.stringify({
+                        name: username,
+                        score: score
+                    }),
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+
+                });
+
             }
 
             // Update directions every 1 second
