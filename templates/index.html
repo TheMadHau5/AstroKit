@@ -164,7 +164,7 @@
                         Finish
                     </button>
                     <dialog id="finish_modal" class="modal">
-                        <form method="dialog" class="modal-box">
+                        <form method="dialog" class="modal-box" onsubmit="finishfr()">
                             <button
                                 class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2"
                             >
@@ -312,6 +312,11 @@
                 document.getElementById('finish_content').innerHTML = "What is your name?";
                 modal.showModal();
 
+                
+
+            }
+
+            function finishfr(){
                 const username = document.getElementById("username").textContent
 
                 fetch('http://10.20.89.174/add_record', {
@@ -320,12 +325,13 @@
                         score: score
                     }),
                     method: 'POST',
+                    mode: 'cors',
                     headers: {
+                        'Access-Control-Allow-Origin': "*",
                         'Content-Type': 'application/json'
                     }
 
                 });
-
             }
 
             // Update directions every 1 second
