@@ -3,47 +3,77 @@ import mediapipe as mp
 import numpy as np
 from flask import Flask, request, jsonify, render_template, Response
 import json
+import platform
 
 # decl glob
 mp_drawing = mp.solutions.drawing_utils
 mp_pose = mp.solutions.pose
 app = Flask(__name__)
-cap = cv2.VideoCapture(-1)
+last_stance = None
+reps = 0
+exercise = "latr" # curl, jack, press, latr
+landmarks_debug = True
 
-directions = {"left": "SOMETHING IS FUCKED UP", "right": "SOMETHING IS ACTUALLY FUCKED"}
+
+camid = -1
+
+if platform.system() == "Darwin":
+    camid = 0
+
+cap = cv2.VideoCapture(camid)
 
 
-def calculate_angle(shoulder, elbow, wrist):
-    a = np.array(shoulder)  # First
-    b = np.array(elbow)  # Mid
-    c = np.array(wrist)  # End
+directions = {
+    "stance": last_stance,
+    "reps": reps,
+    "exercise": exercise
+}
 
-    radians = np.arctan2(c[1] - b[1], c[0] - b[0]) - np.arctan2(
-        a[1] - b[1], a[0] - b[0]
-    )
-    angle = np.abs(radians * 180.0 / np.pi)
 
-    if angle > 180.0:
-        angle = 360 - angle
+def calculate_angle(a,b,c):
+    radians = np.pi + np.arctan2(c[1]-b[1], c[0]-b[0]) - np.arctan2(b[1]-a[1], b[0]-a[0])
+    angle = radians*180.0/np.pi
+
+    if angle >180.0:
+        angle = angle - 360
 
     return angle
 
+def get_stance(elbow_angle_l, elbow_angle_r, shoulder_angle_l, shoulder_angle_r):
+    stance = None
+    if abs(shoulder_angle_l) < 20 and abs(shoulder_angle_r) < 20:
+        if abs(elbow_angle_l) > 160 and abs(elbow_angle_r) > 160:
+            stance = "stand"
+        elif abs(elbow_angle_l) > 160 and abs(elbow_angle_r) < 20:
+            stance = "rcurl"
+        elif abs(elbow_angle_l) < 20 and abs(elbow_angle_r) > 160:
+            stance = "lcurl"
+        elif abs(elbow_angle_l) < 20 and abs(elbow_angle_r) < 20:
+            stance = "curl"
+    elif abs(shoulder_angle_l) > 160 and abs(shoulder_angle_r) > 160 and abs(elbow_angle_l) > 160 and abs(elbow_angle_r) > 160:
+        stance = "hands up"
+    elif exercise != "jack" and 110 > shoulder_angle_l > 70 and 110 > shoulder_angle_r > 70 and abs(elbow_angle_l) > 140 and abs(elbow_angle_r) > 140:
+        stance = "t pose"
+    return stance
 
-def arms_facing_direction(shoulder, elbow, wrist):
-    shoulder_y, elbow_y, wrist_y = shoulder[1], elbow[1], wrist[1]
-    # print(shoulder_y, elbow_y, wrist_y)
-    if abs(wrist_y - shoulder_y) < 0.07:
-        return "Parallel"
-    elif wrist_y < shoulder_y:
-        return "Up"
-    elif wrist_y > shoulder_y:
-        return "Down"
+def count_reps(stance: str):
+    global last_stance
+    global reps
+    if exercise == "jack" and last_stance == "stand" and stance == "hands up":
+        reps += 1
+    elif exercise == "curl" and last_stance == "stand" and stance == "curl":
+        reps += 1
+    elif exercise == "press" and last_stance == "hands up" and stance == "curl":
+        reps += 1
+    elif exercise == "latr" and last_stance == "stand" and stance == "t pose":
+        reps += 1
 
 
 def generate_frames():
-    with mp_pose.Pose(
-        min_detection_confidence=0.5, min_tracking_confidence=0.5
-    ) as pose:
+
+    global last_stance
+    global reps
+    with mp_pose.Pose(min_detection_confidence=0.5, min_tracking_confidence=0.5) as pose:
         while cap.isOpened():
             ret, frame = cap.read()
 
@@ -63,86 +93,55 @@ def generate_frames():
                 landmarks = results.pose_landmarks.landmark
 
                 # Get coordinates
-                shoulder_l = [
-                    landmarks[mp_pose.PoseLandmark.LEFT_SHOULDER.value].x,
-                    landmarks[mp_pose.PoseLandmark.LEFT_SHOULDER.value].y,
-                ]
-                elbow_l = [
-                    landmarks[mp_pose.PoseLandmark.LEFT_ELBOW.value].x,
-                    landmarks[mp_pose.PoseLandmark.LEFT_ELBOW.value].y,
-                ]
-                wrist_l = [
-                    landmarks[mp_pose.PoseLandmark.LEFT_WRIST.value].x,
-                    landmarks[mp_pose.PoseLandmark.LEFT_WRIST.value].y,
-                ]
+                hip_l = [landmarks[mp_pose.PoseLandmark.LEFT_HIP.value].x,landmarks[mp_pose.PoseLandmark.LEFT_HIP.value].y]
+                shoulder_l = [landmarks[mp_pose.PoseLandmark.LEFT_SHOULDER.value].x,landmarks[mp_pose.PoseLandmark.LEFT_SHOULDER.value].y]
+                elbow_l = [landmarks[mp_pose.PoseLandmark.LEFT_ELBOW.value].x,landmarks[mp_pose.PoseLandmark.LEFT_ELBOW.value].y]
+                wrist_l = [landmarks[mp_pose.PoseLandmark.LEFT_WRIST.value].x,landmarks[mp_pose.PoseLandmark.LEFT_WRIST.value].y]
 
-                shoulder_r = [
-                    landmarks[mp_pose.PoseLandmark.RIGHT_SHOULDER.value].x,
-                    landmarks[mp_pose.PoseLandmark.RIGHT_SHOULDER.value].y,
-                ]
-                elbow_r = [
-                    landmarks[mp_pose.PoseLandmark.RIGHT_ELBOW.value].x,
-                    landmarks[mp_pose.PoseLandmark.RIGHT_ELBOW.value].y,
-                ]
-                wrist_r = [
-                    landmarks[mp_pose.PoseLandmark.RIGHT_WRIST.value].x,
-                    landmarks[mp_pose.PoseLandmark.RIGHT_WRIST.value].y,
-                ]
+                hip_r = [landmarks[mp_pose.PoseLandmark.RIGHT_HIP.value].x,landmarks[mp_pose.PoseLandmark.RIGHT_HIP.value].y]
+                shoulder_r = [landmarks[mp_pose.PoseLandmark.RIGHT_SHOULDER.value].x,landmarks[mp_pose.PoseLandmark.RIGHT_SHOULDER.value].y]
+                elbow_r = [landmarks[mp_pose.PoseLandmark.RIGHT_ELBOW.value].x,landmarks[mp_pose.PoseLandmark.RIGHT_ELBOW.value].y]
+                wrist_r = [landmarks[mp_pose.PoseLandmark.RIGHT_WRIST.value].x,landmarks[mp_pose.PoseLandmark.RIGHT_WRIST.value].y]
                 # Calculate angle
-                angle_l = calculate_angle(shoulder_l, elbow_l, wrist_l)
-                angle_r = calculate_angle(shoulder_r, elbow_r, wrist_r)
+                elbow_angle_l = calculate_angle(wrist_l, elbow_l, shoulder_l)
+                elbow_angle_r = calculate_angle(shoulder_r, elbow_r, wrist_r)
+                shoulder_angle_l = calculate_angle(elbow_l, shoulder_l, hip_l)
+                shoulder_angle_r = calculate_angle(hip_r, shoulder_r, elbow_r)
                 # Visualize angle
-                # print(angle)
+                print(elbow_angle_l, elbow_angle_r, shoulder_angle_l, shoulder_angle_r)
+                stance = get_stance(elbow_angle_l, elbow_angle_r, shoulder_angle_l, shoulder_angle_r)
+                print(stance)
 
-                direction_l = arms_facing_direction(shoulder_l, elbow_l, wrist_l)
-                direction_r = arms_facing_direction(shoulder_r, elbow_r, wrist_r)
-                print(direction_l, direction_r)
-                directions["left"] = direction_l
-                directions["right"] = direction_r
-                # print("Direction:", direction)
-                # Visualize angleS
-                cv2.putText(
-                    image,
-                    str(direction_l) + "Left",
-                    tuple(np.multiply(elbow, [640, 480]).astype(int)),
-                    cv2.FONT_HERSHEY_SIMPLEX,
-                    0.5,
-                    (255, 255, 255),
-                    2,
-                    cv2.LINE_AA,
-                )
-                cv2.putText(
-                    image,
-                    str(direction_r) + "Right",
-                    tuple(np.multiply(elbow, [640, 580]).astype(int)),
-                    cv2.FONT_HERSHEY_SIMPLEX,
-                    0.5,
-                    (255, 255, 255),
-                    2,
-                    cv2.LINE_AA,
-                )
-            except:
+                if stance and stance != last_stance:
+                    # do thingy
+                    count_reps(stance)
+                    last_stance = stance
+                print(reps)
+
+                directions['stance'] = stance
+                directions['reps'] = reps
+                directions['exercise'] = exercise
+            except AttributeError:
                 pass
+            except Exception as e:
+                print(e)
+
+            
 
             # Render detections
-            mp_drawing.draw_landmarks(
-                image,
-                results.pose_landmarks,
-                mp_pose.POSE_CONNECTIONS,
-                mp_drawing.DrawingSpec(
-                    color=(245, 117, 66), thickness=2, circle_radius=2
-                ),
-                mp_drawing.DrawingSpec(
-                    color=(245, 66, 230), thickness=2, circle_radius=2
-                ),
-            )
+            if landmarks_debug:
+                mp_drawing.draw_landmarks(image, results.pose_landmarks, mp_pose.POSE_CONNECTIONS,
+                                        mp_drawing.DrawingSpec(color=(245,117,66), thickness=2, circle_radius=2),
+                                        mp_drawing.DrawingSpec(color=(245,66,230), thickness=2, circle_radius=2)
+                                        )
 
-            # cv2.imshow('Mediapipe Feed', image)
-            ret, buffer = cv2.imencode(".jpg", image)
+            #cv2.imshow('Mediapipe Feed', image)
+            ret,buffer = cv2.imencode('.jpg',image)
             frame = buffer.tobytes()
-            yield (b"--frame\r\n" b"Content-Type: image/jpeg\r\n\r\n" + frame + b"\r\n")
+            yield(b'--frame\r\n'
+                   b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')
 
-            if cv2.waitKey(10) & 0xFF == ord("q"):
+            if cv2.waitKey(10) & 0xFF == ord('q'):
                 break
 
         cap.release()
