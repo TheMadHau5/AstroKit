@@ -8,7 +8,6 @@ class ScoreBoard:
     def __init__(self, autoload: bool = True):
         self.scoreboard = []
         self.membercount = 0
-        self.headers = ["Submission name", "Score"]
         self.filename = "scores.csv"
         if autoload:
             self.load()
@@ -28,7 +27,6 @@ class ScoreBoard:
     def flush(self):
         with open(self.filename, 'w') as csvfile:
             csvwriter = csv.writer(csvfile)
-            csvwriter.writerow(self.headers)
             csvwriter.writerows(self.scoreboard)
 
     def load(self):
@@ -39,7 +37,6 @@ class ScoreBoard:
         
         with open(self.filename, 'r') as csvfile:
             csvreader = csv.reader(csvfile)
-            next(csvreader)
             for row in csvreader:
                 rows.append(row)
 
