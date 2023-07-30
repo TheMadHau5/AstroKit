@@ -111,37 +111,34 @@ def generate_frames():
                 shoulder_angle_l = calculate_angle(elbow_l, shoulder_l, hip_l)
                 shoulder_angle_r = calculate_angle(hip_r, shoulder_r, elbow_r)
                 
-                #Start of Amongus Mask
-                nose = landmarks[mp_pose.PoseLandmark.NOSE.value]
-                left_ear = landmarks[mp_pose.PoseLandmark.LEFT_EAR.value]
-                right_ear = landmarks[mp_pose.PoseLandmark.RIGHT_EAR.value]
-                distance = np.sqrt(
-                    ((right_ear.x - left_ear.x) ** 2) + ((right_ear.y - left_ear.y) ** 2))
-                optimal_distance = 0.058  # Desired optimal distance
-                scaling_factor = distance/optimal_distance  # Calculate the scaling factor
-                
-                if scaling_factor <= 0:
-                    scaling_factor = 0.001
-                img_copy = image.copy()
-                scaled_width = int(133 * float(scaling_factor))
-                scaled_height = int(133 * float(scaling_factor))
-               
-                scaled_img1 = cv2.resize(img1, (scaled_width, scaled_height), interpolation=cv2.INTER_CUBIC)
+                if to_run.helmet:
+                    nose = landmarks[mp_pose.PoseLandmark.NOSE.value]
+                    left_ear = landmarks[mp_pose.PoseLandmark.LEFT_EAR.value]
+                    right_ear = landmarks[mp_pose.PoseLandmark.RIGHT_EAR.value]
+                    distance = np.sqrt(
+                        ((right_ear.x - left_ear.x) ** 2) + ((right_ear.y - left_ear.y) ** 2))
+                    optimal_distance = 0.058  # Desired optimal distance
+                    scaling_factor = distance/optimal_distance  # Calculate the scaling factor
 
-                nose_x, nose_y = int(nose.x * image.shape[1]), int(nose.y * image.shape[0])
-                nose_y = int(0.9 * nose_y)
-               
-                crop_size = int(scaled_img1.shape[0]/2)
-                print(scaled_img1.shape)
-                crop_x1, crop_x2 = max(0, nose_x - crop_size), min(image.shape[1], nose_x + crop_size)
-                crop_y1, crop_y2 = max(0, nose_y - crop_size), min(image.shape[0], nose_y + crop_size)
-                cropped_region = scaled_img1[0:crop_size * 2, 0:crop_size * 2]
-                red_mask = cropped_region[:, :, 2] == 255
-                img_copy[crop_y1:crop_y2, crop_x1:crop_x2][~red_mask] = cropped_region[~red_mask]
-                image = img_copy
-                #End of Amongus Mask
+                    if scaling_factor <= 0:
+                        scaling_factor = 0.001
+                    img_copy = image.copy()
+                    scaled_width = int(133 * float(scaling_factor))
+                    scaled_height = int(133 * float(scaling_factor))
 
-                print(elbow_angle_l, elbow_angle_r, shoulder_angle_l, shoulder_angle_r)
+                    scaled_img1 = cv2.resize(img1, (scaled_width, scaled_height), interpolation=cv2.INTER_CUBIC)
+
+                    nose_x, nose_y = int(nose.x * image.shape[1]), int(nose.y * image.shape[0])
+                    nose_y = int(0.9 * nose_y)
+
+                    crop_size = int(scaled_img1.shape[0]/2)
+                    crop_x1, crop_x2 = max(0, nose_x - crop_size), min(image.shape[1], nose_x + crop_size)
+                    crop_y1, crop_y2 = max(0, nose_y - crop_size), min(image.shape[0], nose_y + crop_size)
+                    cropped_region = scaled_img1[0:crop_size * 2, 0:crop_size * 2]
+                    red_mask = cropped_region[:, :, 2] == 255
+                    img_copy[crop_y1:crop_y2, crop_x1:crop_x2][~red_mask] = cropped_region[~red_mask]
+                    image = img_copy
+
                 to_run.set_stance(elbow_angle_l, elbow_angle_r, shoulder_angle_l, shoulder_angle_r)
                 to_run.count_reps()
 
