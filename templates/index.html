@@ -258,7 +258,7 @@
             function repsPerSet(x) {
                 ireps = x;
                 document.getElementById('progress').max = ireps.toString();
-                updateDirections();
+                tick();
             }
 
             function nextButton () {
@@ -286,7 +286,7 @@
 
                 });
 
-                updateDirections();
+                tick();
             }
 
             function setAuto() {
