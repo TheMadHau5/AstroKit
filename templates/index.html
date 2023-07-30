@@ -323,7 +323,7 @@
                 const response = await fetch('/tick');
                 const directionInfo = await response.json();
                 const { score } = directionInfo;
-                const username = document.getElementById("username").textContent
+                const username = document.getElementById("username").value
 
                 fetch('http://10.20.89.174:9000/add_record', {
                     body: JSON.stringify({
