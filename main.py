@@ -9,7 +9,7 @@ from typing import Optional
 mp_drawing = mp.solutions.drawing_utils
 mp_pose = mp.solutions.pose
 app = Flask(__name__)
-img1 = cv2.imread("/Users/dhruvroongta/Downloads/helmet_redscreen.png")
+img1 = cv2.imread("AstroKit/static/helmet_redscreen.png")
 
 camid = -1
 if platform.system() == "Darwin":
