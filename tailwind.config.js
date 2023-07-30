@@ -2,7 +2,11 @@
 module.exports = {
     content: ["./templates/*.{html,js}"],
     theme: {
-        extend: {}
+        extend: {
+            animation: {
+                "astronaut-spin": "spin 3s linear infinite"
+            }
+        }
     },
     plugins: [require("daisyui")]
 };
