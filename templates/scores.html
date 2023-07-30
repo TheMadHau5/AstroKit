@@ -1,0 +1,80 @@
+<!-- {records: [{ name: str, score: int }]} -->
+
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Scoreboard</title>
+        <link rel="stylesheet" href="/static/dist/output.css" />
+    </head>
+    <body class="bg-gray-900 min-h-screen items-center justify-center">
+        <table class="px-4 py-20 flex items-center justify-center">
+            <tr class="text-4xl font-semibold">
+                <th>Rank</th>
+                <th>User</th>
+                <th>Score</th>
+            </tr>
+            <tr>
+                <td id="rank1"></td>
+                <td id="user1"></td>
+                <td id="score1"></td>
+            </tr>
+            <tr>
+                <td id="rank2"></td>
+                <td id="user2"></td>
+                <td id="score2"></td>
+            </tr>
+            <tr>
+                <td id="rank3"></td>
+                <td id="user3"></td>
+                <td id="score3"></td>
+            </tr>
+            <tr>
+                <td id="rank4"></td>
+                <td id="user4"></td>
+                <td id="score4"></td>
+            </tr>
+            <tr>
+                <td id="rank5"></td>
+                <td id="user5"></td>
+                <td id="score5"></td>
+            </tr>
+            <tr>
+                <td id="rank6"></td>
+                <td id="user6"></td>
+                <td id="score6"></td>
+            </tr>
+            <tr>
+                <td id="rank7"></td>
+                <td id="user7"></td>
+                <td id="score7"></td>
+            </tr>
+            <tr>
+                <td id="rank8"></td>
+                <td id="user8"></td>
+                <td id="score8"></td>
+            </tr>
+            <tr>
+                <td id="rank9"></td>
+                <td id="user9"></td>
+                <td id="score9"></td>
+            </tr>
+            <tr>
+                <td id="rank10"></td>
+                <td id="user10"></td>
+                <td id="score10"></td>
+            </tr>
+        </table>
+    </body>
+    <script>
+        fetch('/scoreboard').then(d => d.json()).then((data) => {
+            console.log(data);
+            data.records.map((value, index) => {
+                document.getElementById(`rank${index + 1}`).innerText = index + 1;
+                document.getElementById(`user${index + 1}`).innerText = value.name;
+                document.getElementById(`score${index + 1}`).innerText = value.score;
+            })
+        });
+    </script>
+</html>

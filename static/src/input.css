@@ -1,3 +1,11 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+td {
+    @apply text-2xl border-2 border-gray-700 px-10 py-4;
+}
+
+th {
+    @apply border-4 border-gray-700 px-10 py-4;
+}

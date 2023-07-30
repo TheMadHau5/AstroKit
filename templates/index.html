@@ -156,6 +156,32 @@
                     >
                         Next
                     </button>
+                    <!-- You can open the modal using ID.showModal() method -->
+                    <button
+                        class="px-4 py-2 bg-gray-700 text-white hover:scale-110 ease-in-out transition duration-200 rounded-xl"
+                        onclick="finish()"
+                    >
+                        Finish
+                    </button>
+                    <dialog id="finish_modal" class="modal">
+                        <form method="dialog" class="modal-box">
+                            <button
+                                class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2"
+                            >
+                                ✕
+                            </button>
+                            <h3
+                                class="font-bold text-lg"
+                                id="finish_title"
+                            ></h3>
+                            <p class="py-4" id="finish_content"></p>
+                            <input
+                                type="text"
+                                placeholder="Type your name here"
+                                class="input input-bordered w-full max-w-xs"
+                            />
+                        </form>
+                    </dialog>
                 </div>
             </div>
         </section>
@@ -275,6 +301,13 @@
             function toggleHelmet() {
                 helmet = !helmet;
                 updateSetting({helmet});
+            }
+
+            function finish() {
+                const modal = document.getElementById('finish_modal');
+                document.getElementById('finish_title').innerHTML = `Congratulations! Your score is X.`;
+                document.getElementById('finish_content').innerHTML = "What is your name?";
+                modal.showModal();
             }
 
             // Update directions every 1 second
