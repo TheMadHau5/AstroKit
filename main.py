@@ -26,7 +26,7 @@ class Exercise:
         self.score = 0
         self.last_stance = None
         self.stance = None
-        self.landmarks_debug = landmarks_debug
+        self.landmarks_debug = False
         self.helmet = False
 
     def set_exercise(self, exercise):
