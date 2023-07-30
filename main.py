@@ -9,6 +9,8 @@ import platform
 mp_drawing = mp.solutions.drawing_utils
 mp_pose = mp.solutions.pose
 app = Flask(__name__)
+last_stance = None
+reps = 0
 
 camid = -1
 
@@ -23,6 +25,7 @@ directions = {
 }
 
 
+exercise = "latr" # curl, jack, press, latr
 
 def calculate_angle(a,b,c):
     radians = np.pi + np.arctan2(c[1]-b[1], c[0]-b[0]) - np.arctan2(b[1]-a[1], b[0]-a[0])
@@ -35,7 +38,7 @@ def calculate_angle(a,b,c):
 
 def get_stance(elbow_angle_l, elbow_angle_r, shoulder_angle_l, shoulder_angle_r):
     stance = None
-    if shoulder_angle_l < 20 and shoulder_angle_r < 20:
+    if abs(shoulder_angle_l) < 20 and abs(shoulder_angle_r) < 20:
         if abs(elbow_angle_l) > 160 and abs(elbow_angle_r) > 160:
             stance = "stand"
         elif abs(elbow_angle_l) > 160 and abs(elbow_angle_r) < 20:
@@ -46,9 +49,23 @@ def get_stance(elbow_angle_l, elbow_angle_r, shoulder_angle_l, shoulder_angle_r)
             stance = "curl"
     elif abs(shoulder_angle_l) > 160 and abs(shoulder_angle_r) > 160 and abs(elbow_angle_l) > 160 and abs(elbow_angle_r) > 160:
         stance = "hands up"
-    elif 100 > shoulder_angle_l > 70 and 100 > shoulder_angle_r > 70 and abs(elbow_angle_l) > 160 and abs(elbow_angle_r) > 160:
+    elif exercise != "jack" and 110 > shoulder_angle_l > 70 and 110 > shoulder_angle_r > 70 and abs(elbow_angle_l) > 140 and abs(elbow_angle_r) > 140:
         stance = "t pose"
     return stance
+
+def count_reps(stance: str):
+    global last_stance
+    global reps
+    if exercise == "jack" and last_stance == "stand" and stance == "hands up":
+        reps += 1
+    elif exercise == "curl" and last_stance == "stand" and stance == "curl":
+        reps += 1
+    elif exercise == "press" and last_stance == "hands up" and stance == "curl":
+        reps += 1
+    elif exercise == "latr" and last_stance == "stand" and stance == "t pose":
+        reps += 1
+
+
 
 def arms_facing_direction(shoulder, elbow, wrist):
     shoulder_y, elbow_y, wrist_y = shoulder[1], elbow[1], wrist[1]
@@ -61,6 +78,8 @@ def arms_facing_direction(shoulder, elbow, wrist):
         return "Down"
 
 def generate_frames():
+    global last_stance
+    global reps
     with mp_pose.Pose(min_detection_confidence=0.5, min_tracking_confidence=0.5) as pose:
         while cap.isOpened():
             ret, frame = cap.read()
@@ -99,6 +118,11 @@ def generate_frames():
                 print(elbow_angle_l, elbow_angle_r, shoulder_angle_l, shoulder_angle_r)
                 stance = get_stance(elbow_angle_l, elbow_angle_r, shoulder_angle_l, shoulder_angle_r)
                 print(stance)
+                if stance and stance != last_stance:
+                    # do thingy
+                    count_reps(stance)
+                    last_stance = stance
+                print(reps)
 
                 direction_l = arms_facing_direction(shoulder_l, elbow_l, wrist_l)
                 direction_r = arms_facing_direction(shoulder_r, elbow_r, wrist_r)
@@ -108,15 +132,17 @@ def generate_frames():
                 #print("Direction:", direction)
                 # Visualize angleS
                 cv2.putText(image, str(direction_l) + "Left",
-                            tuple(np.multiply(elbow, [640, 480]).astype(int)),
+                            tuple(np.multiply(elbow_l, [640, 480]).astype(int)),
                             cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 2, cv2.LINE_AA
                                     )
                 cv2.putText(image, str(direction_r) + "Right",
-                            tuple(np.multiply(elbow, [640, 580]).astype(int)),
+                            tuple(np.multiply(elbow_r, [640, 580]).astype(int)),
                             cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 2, cv2.LINE_AA
                                     )
-            except:
+            except AttributeError:
                 pass
+            except Exception as e:
+                print(e)
 
 
             # Render detections
