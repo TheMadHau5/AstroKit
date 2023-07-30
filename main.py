@@ -193,9 +193,15 @@ def video():
     )
 
 
-@app.route("/change_exercise", methods=["POST"])
-def change_exercise():
-    to_run.set_exercise(request.get_json(force=True)["exercise"])
+@app.route("/update_setting", methods=["POST"])
+def update_setting():
+    ops = request.get_json(force=True)
+    print(ops)
+    if "exercise" in ops:
+        to_run.set_exercise(ops["exercise"])
+    if "landmarks_debug" in ops:
+        to_run.landmarks_debug = ops["landmarks_debug"]
+
     return "success"
 
 

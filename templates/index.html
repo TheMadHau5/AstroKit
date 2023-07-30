@@ -70,6 +70,7 @@
                             type="checkbox"
                             class="toggle toggle-success"
                             checked
+                            onchange="toggleLandmarks()"
                         />
                     </button>
                     <button
@@ -134,6 +135,7 @@
             let ireps = 10;
             let exc = null;
             let auto = true;
+            let landmarks_debug = true;
             const exercises = {
                 press: "Shoulder Press",
                 latr: "Lateral Raises",
@@ -176,7 +178,7 @@
             }
 
             function updateSetting(body) {
-                fetch('/change_exercise', {
+                fetch('/update_setting', {
                     body: JSON.stringify(body),
                     method: 'POST',
                     headers: {
@@ -190,6 +192,11 @@
 
             function setAuto() {
                 auto = !auto;
+            }
+
+            function toggleLandmarks() {
+                landmarks_debug = !landmarks_debug;
+                updateSetting({landmarks_debug});
             }
 
             // Update directions every 1 second
