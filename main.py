@@ -112,6 +112,7 @@ def generate_frames():
                 shoulder_angle_r = calculate_angle(hip_r, shoulder_r, elbow_r)
                 
                 if to_run.helmet:
+                    print()
                     nose = landmarks[mp_pose.PoseLandmark.NOSE.value]
                     left_ear = landmarks[mp_pose.PoseLandmark.LEFT_EAR.value]
                     right_ear = landmarks[mp_pose.PoseLandmark.RIGHT_EAR.value]
