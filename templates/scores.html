@@ -68,13 +68,14 @@
         </table>
     </body>
     <script>
-        fetch('/scoreboard').then(d => d.json()).then((data) => {
-            console.log(data);
-            data.records.map((value, index) => {
-                document.getElementById(`rank${index + 1}`).innerText = index + 1;
-                document.getElementById(`user${index + 1}`).innerText = value.name;
-                document.getElementById(`score${index + 1}`).innerText = value.score;
-            })
-        });
+        setInterval(() => {
+            fetch('/scoreboard').then(d => d.json()).then((data) => {
+                data.records.map((value, index) => {
+                    document.getElementById(`rank${index + 1}`).innerText = index + 1;
+                    document.getElementById(`user${index + 1}`).innerText = value.name;
+                    document.getElementById(`score${index + 1}`).innerText = value.score;
+                })
+            });
+        }, 5000)
     </script>
 </html>
