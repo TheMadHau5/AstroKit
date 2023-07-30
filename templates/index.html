@@ -3,10 +3,22 @@
     <head>
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>AstroKit</title>
+        <title>AstroFit</title>
         <link rel="stylesheet" href="/static/dist/output.css" />
     </head>
-    <body class="p-6 bg-gray-600 flex flex-col h-screen">
+    <body class="p-6 bg-gray-600 flex flex-col min-h-screen">
+        <dialog id="my_modal_3" class="modal p-12">
+            <form method="dialog" class="modal-box bg-gray-900">
+                <button
+                    class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2"
+                >
+                    ✕
+                </button>
+                <h3 class="font-bold text-2xl" id="modal-title"></h3>
+                <p class="py-4 text-lg" id="modal-content"></p>
+            </form>
+        </dialog>
+
         <section
             class="text-gray-300 bg-gray-900 body-font rounded-2xl justify-center items-center"
         >
@@ -14,10 +26,16 @@
                 <div class="flex flex-wrap">
                     <div class="p-4 lg:w-1/3 items-center justify-center">
                         <div
-                            class="h-full bg-gray-800 bg-opacity-40 px-8 py-16 rounded-lg overflow-hidden text-center relative items-center justify-center"
+                            class="h-full bg-gray-800 space-y-4 bg-opacity-40 px-8 py-16 rounded-lg overflow-hidden text-center relative items-center justify-center"
                         >
+                            <h3 id="reps" class="text-xl text-gray-300">
+                                Reps: 0/10
+                            </h3>
                             <progress
-                                class="progress w-full items-center mx-auto justify-center"
+                                class="progress h-10 w-full items-center mx-auto justify-center"
+                                id="progress"
+                                value="0"
+                                max="10"
                             ></progress>
                         </div>
                     </div>
@@ -26,58 +44,241 @@
                             class="h-full bg-gray-800 bg-opacity-40 px-8 py-16 rounded-lg overflow-hidden text-center relative items-center justify-center"
                         >
                             <h1
-                                class="title-font text-3xl font-medium text-white mb-3"
+                                class="title-font text-4xl font-semibold text-white mb-3"
+                                id="title"
                             >
-                                Exercise Title
+                                Exercise
                             </h1>
+                            <div
+                                class="flex flex-row items-center justify-center text-center gap-x-4"
+                            >
+                                <h3 id="stance" class="text-xl text-gray-300">
+                                    Please wait..
+                                </h3>
+                            </div>
                         </div>
                     </div>
                     <div class="p-4 lg:w-1/3 items-center justify-center">
                         <div
-                            class="h-full bg-gray-800 bg-opacity-40 px-8 py-16 rounded-lg overflow-hidden text-center relative"
+                            class="h-full bg-gray-800 bg-opacity-40 px-8 py-16 rounded-lg overflow-hidden text-center relative inline-flex justify-center items-center gap-2"
                         >
+                            <h3 class="text-2xl font-semibold" id="score"></h3>
                             <img
                                 src="https://www.pngplay.com/wp-content/uploads/8/Space-Astronaut-Transparent-File.png"
-                                class="w-1/4 mx-auto"
+                                id="astronaut"
+                                class="w-1/4"
                             />
                         </div>
                     </div>
                 </div>
             </div>
             <div
-                class="p-4 w-[80%] mx-auto flex space-x-20 items-center justify-center"
+                class="p-2 w-[90%] mx-auto flex space-x-20 items-center justify-center"
             >
+                <div class="w-1/4 flex flex-col space-y-5">
+                    <button
+                        class="p-2 bg-gray-600 text-white scale-110 ease-in-out transition duration-200 inline-flex rounded-xl items-center justify-between gap-2"
+                    >
+                        <a>Music</a>
+                        <input
+                            type="checkbox"
+                            class="toggle toggle-success"
+                            onchange="music = !music"
+                            checked
+                        /></button
+                    ><button
+                        class="p-2 bg-gray-600 text-white scale-110 ease-in-out transition duration-200 inline-flex rounded-xl items-center justify-between gap-2"
+                    >
+                        <a>View Helmet</a>
+                        <input type="checkbox" class="toggle toggle-success" />
+                    </button>
+                    <button
+                        class="p-2 bg-gray-600 text-white scale-110 ease-in-out transition duration-200 inline-flex rounded-xl items-center justify-between gap-2"
+                    >
+                        <a>Render Wireframe</a>
+                        <input
+                            type="checkbox"
+                            class="toggle toggle-success"
+                            onchange="toggleLandmarks()"
+                        />
+                    </button>
+                    <button
+                        class="p-2 bg-gray-600 text-white scale-110 ease-in-out transition duration-200 inline-flex rounded-xl items-center justify-between gap-2"
+                    >
+                        <a class="mr-auto">Switch Exercise</a>
+                        <input
+                            type="checkbox"
+                            class="toggle toggle-success ml-auto"
+                            onchange="setAuto()"
+                        />
+                    </button>
+                    <div
+                        class="p-2 bg-gray-600 text-white scale-110 text-center ease-in-out transition duration-200 rounded-xl inline-block items-center justify-center gap-2"
+                    >
+                        <a class="text-center mb-2">Reps per Set</a>
+                        <input
+                            type="range"
+                            min="5"
+                            max="30"
+                            value="10"
+                            class="range"
+                            step="5"
+                            onchange="repsPerSet(this.value)"
+                        />
+                        <div class="w-full flex justify-between text-xs px-2">
+                            <span>5</span>
+                            <span>10</span>
+                            <span>15</span>
+                            <span>20</span>
+                            <span>25</span>
+                            <span>30</span>
+                        </div>
+                    </div>
+                </div>
                 <div
-                    class="h-full bg-gray-800 bg-opacity-40 px-4 py-10 mb-2 rounded-lg overflow-hidden text-center relative flex"
+                    class="w-1/2 bg-gray-800 bg-opacity-40 px-4 py-10 mb-2 rounded-lg overflow-hidden text-center relative flex"
                 >
                     <img
                         src="{{ url_for('video') }}"
-                        class="w-[85%] mx-auto rounded-2xl"
+                        class="w-[90%] mx-auto rounded-2xl -scale-x-100"
                     />
                 </div>
-                <div class="flex flex-col space-y-10">
+                <div class="w-1/4 flex flex-col space-y-10">
                     <button
                         class="px-4 py-2 bg-red-500 text-white hover:scale-110 ease-in-out transition duration-200 rounded-xl"
+                        onclick="prevButton()"
                     >
                         Previous
                     </button>
                     <button
                         class="px-4 py-2 bg-green-500 text-white hover:scale-110 ease-in-out transition duration-200 rounded-xl"
+                        onclick="nextButton()"
                     >
                         Next
                     </button>
                 </div>
             </div>
         </section>
+        <audio id="bgm" src="/static/bgm.mp3"></audio>
         <script>
-            async function updateDirections() {
-                const response = await fetch('/directions'); // Make an AJAX request to the Flask route that provides direction information
+            const bgm = document.getElementById('bgm');
+            bgm.loop = true;
+            let music = true;
+            let ireps = 10;
+            let exc = null;
+            let auto = false;
+            let landmarks_debug = false;
+            let helmet = false;
+            const exercises = {
+                press: "Shoulder Press",
+                latr: "Lateral Raises",
+                curl: "Bicep Curl",
+                jack: "Jumping Jacks"
+            };
+
+            let shown = {
+                press: false,
+                latr: false,
+                curl: false,
+                jack: false
+            }
+
+            const stories = {
+            "Bicep Curl":
+            "Once upon a time, there was a Mighty Raju who failed to pull Chutki. After realising that Bheem had intense strength on Earth, Mighty Raju decided to get an alien girlfriend 😏. He set out on a voyage to find the one for him. So he decides to become an astronaut and train his body. Everyday, Mighty Raju does bicep curls to make Chutki jealous by impressing ‘girls out of this world’. You are Mighty Raju, and must train Bicep Curls. Good luck getting your Alien Gilfriend.",
+
+            "Jumping Jacks":
+            "One day, Baba Ramdev decided to go to space to give aliens patanjali dant kanti. He put on his orange astronaut suit. Since he doesn’t know Einstein’s theory of relativity, he plans to ‘swim’ through space. To practise swimming, he does jumping jacks, training those beautiful arms of his. You are Baba Ramdev, embarking on this mission to advertise dant kanti. Good luck.",
+
+            "Lateral Raises":
+            "For Mission Impossible 7, Tom Cruise decided to pull of the best stunt of all time: He decided to become a _rocket_. 🚀. Tom Cruise is both the astronaut, AND the actual rocket. To become a rocket, he has to flyyyyy. So he is doing lateral raises, to go up and up, until he can defeat some space villain: Science. You are Tom Cruise, embarking on this possible Mission Impossible. . Good luck.",
+
+            "Shoulder Press": "Normal Volleyball is boring (yawn). Today, you’re going to play astronaut volleyball: You play with…comets. You and your astronaut friends love playing astronaut volleyball with these tiny celestial bodies. To practise your volleyball skills, and beat your friends (Mighty Raju, Baba Ramdev, and Tom Cruise), you can do the press exercise."
+            };
+
+            async function tick() {
+                if (!music) {
+                    bgm.pause();
+                } else if (bgm.paused) {
+                    bgm.play();
+                }
+                const response = await fetch('/tick'); // Make an AJAX request to the Flask route that provides direction information
                 const directionInfo = await response.json();
-                console.log(directionInfo)
+                let { stance, reps, exercise, score } = directionInfo;
+                if (reps >= ireps) {
+                    if (auto) return await nextButton();
+                }
+                document.getElementById('title').innerHTML = exercises[exercise];
+                exc = exercise;
+                document.getElementById('stance').innerHTML = `Stance: ${stance ? stance : 'N/A'}`;
+                document.getElementById('reps').innerHTML = `Sets: ${Math.floor(reps / ireps)} Reps: ${reps % ireps}/${ireps}`;
+                document.getElementById('progress').value = (reps % ireps).toString();
+                if (score !== 0) {
+                    document.getElementById('score').innerHTML = `Score: ${score}`;
+                    document.getElementById('astronaut').className += ` animate-astronaut-spin`;
+                    document.getElementById('score').className += ` ease-in duration-500 transition`;
+                }
+
+                if (!shown[exercise]) {
+                    shown[exercise] = true;
+                    const story = stories[exercises[exercise]];
+                    const modal = document.getElementById('my_modal_3');
+                    document.getElementById('modal-title').innerHTML = exercises[exercise];
+                    document.getElementById('modal-content').innerHTML = story;
+                    modal.showModal();
+                }
+            }
+
+            function repsPerSet(x) {
+                ireps = x;
+                document.getElementById('progress').max = ireps.toString();
+                updateDirections();
+            }
+
+            function nextButton () {
+                const keys = [...Object.keys(exercises)];
+                const index = keys.indexOf(exc);
+                const next = keys[(index + 1) % keys.length];
+                updateSetting({exercise: next});
+            }
+
+            function prevButton () {
+                const keys = [...Object.keys(exercises)];
+                const index = keys.indexOf(exc);
+                const newIndex = index == 0 ? keys.length - 1 : (index - 1) % keys.length;
+                const prev = keys[newIndex];
+                updateSetting({exercise: prev});
+            }
+
+            function updateSetting(body) {
+                fetch('/update_setting', {
+                    body: JSON.stringify(body),
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+
+                });
+
+                updateDirections();
+            }
+
+            function setAuto() {
+                auto = !auto;
+            }
+
+            function toggleLandmarks() {
+                landmarks_debug = !landmarks_debug;
+                updateSetting({landmarks_debug});
+            }
+
+            function toggleHelmet() {
+                helmet = !helmet;
+                updateSetting({helmet});
             }
 
             // Update directions every 1 second
-            setInterval(updateDirections, 1000);
+            setInterval(tick, 100);
         </script>
     </body>
 </html>

@@ -5,11 +5,13 @@ from flask import Flask, request, jsonify, render_template, Response
 import json
 import platform
 from typing import Optional
+
 # decl glob
 mp_drawing = mp.solutions.drawing_utils
 mp_pose = mp.solutions.pose
 app = Flask(__name__)
-img1 = cv2.imread("AstroKit/static/helmet_redscreen.png")
+img1 = cv2.imread("static/helmet_redscreen.png")
+
 
 camid = -1
 if platform.system() == "Darwin":
@@ -18,22 +20,23 @@ if platform.system() == "Darwin":
 cap = cv2.VideoCapture(camid)
 
 class Exercise:
-    def __init__(self, exercise:Optional[str] = None,landmarks_debug:Optional[bool] = True):
+    def __init__(self, exercise: Optional[str] = None):
         self.exercise = exercise
         self.reps = 0
         self.score = 0
         self.last_stance = None
         self.stance = None
         self.landmarks_debug = landmarks_debug
-        
-    
+        self.helmet = False
+
     def set_exercise(self, exercise):
         self.reps = 0
         self.exercise = exercise
         self.last_stance = None
         self.stance = None
-        
+  
     def set_stance(self,elbow_angle_l, elbow_angle_r, shoulder_angle_l, shoulder_angle_r):
+
         if abs(shoulder_angle_l) < 20 and abs(shoulder_angle_r) < 20:
             if abs(elbow_angle_l) > 160 and abs(elbow_angle_r) > 160:
                 self.stance = "stand"
@@ -61,14 +64,16 @@ class Exercise:
                 self.score += 10
         self.last_stance = self.stance
 
-def calculate_angle(a,b,c):
-    radians = np.pi + np.arctan2(c.y-b.y, c.x-b.x) - np.arctan2(b.y-a.y, b.x-a.x)
-    angle = radians*180.0/np.pi
-    if angle >180.0:
+def calculate_angle(a, b, c):
+    radians = np.pi + np.arctan2(c.y - b.y, c.x - b.x) - np.arctan2(b.y - a.y, b.x - a.x)
+    angle = radians * 180.0 / np.pi
+    if angle > 180.0:
         angle = angle - 360
     return angle
 
+
 to_run = Exercise("curl")
+
 
 def generate_frames():
     with mp_pose.Pose(min_detection_confidence=0.5, min_tracking_confidence=0.5) as pose:
@@ -100,6 +105,7 @@ def generate_frames():
                 elbow_r = landmarks[mp_pose.PoseLandmark.RIGHT_ELBOW.value]
                 wrist_r = landmarks[mp_pose.PoseLandmark.RIGHT_WRIST.value]
 
+                # Calculate angle
                 elbow_angle_l = calculate_angle(wrist_l, elbow_l, shoulder_l)
                 elbow_angle_r = calculate_angle(shoulder_r, elbow_r, wrist_r)
                 shoulder_angle_l = calculate_angle(elbow_l, shoulder_l, hip_l)
@@ -151,11 +157,10 @@ def generate_frames():
                                         mp_drawing.DrawingSpec(color=(245,66,230), thickness=2, circle_radius=2)
                                         )
 
-            #cv2.imshow('Mediapipe Feed', image)
-            ret,buffer = cv2.imencode('.jpg',image)
+            # cv2.imshow('Mediapipe Feed', image)
+            ret, buffer = cv2.imencode('.jpg',image)
             frame = buffer.tobytes()
-            yield(b'--frame\r\n'
-                   b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')
+            yield(b'--frame\r\nContent-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')
 
         cap.release()
         cv2.destroyAllWindows()
@@ -178,6 +183,20 @@ def video():
 @app.route('/change_exercise', methods=['POST'])
 def change_exercise():
     to_run = to_run.set_exercise(request.form['exercise'])
+
+@app.route("/update_setting", methods=["POST"])
+def update_setting():
+    ops = request.get_json(force=True)
+    print(ops)
+    if "exercise" in ops:
+        to_run.set_exercise(ops["exercise"])
+    if "landmarks_debug" in ops:
+        to_run.landmarks_debug = ops["landmarks_debug"]
+    if "helmet" in ops:
+        to_run.helmet = ops["helmet"]
+
+    return "success"
+
 
 if __name__ == "__main__":
     app.run(debug = True)  # debug=True)
