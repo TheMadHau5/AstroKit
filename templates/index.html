@@ -325,15 +325,13 @@
                 const { score } = directionInfo;
                 const username = document.getElementById("username").value
 
-                fetch('http://10.20.89.174:9000/add_record', {
+                fetch('/submit_score', {
                     body: JSON.stringify({
                         name: username,
                         score: score
                     }),
                     method: 'POST',
-                    mode: 'no-cors',
                     headers: {
-                        'Access-Control-Allow-Origin': "*",
                         'Content-Type': 'application/json'
                     }
                 });

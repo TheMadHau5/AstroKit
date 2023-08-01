@@ -2,7 +2,6 @@ import csv
 from flask import Flask, request, render_template
 import os
 from threading import Thread
-from flask_cors import cross_origin
 
 
 class ScoreBoard:
@@ -20,6 +19,7 @@ class ScoreBoard:
         return self.top()
 
     def sort(self):
+        print(self.scoreboard)
         self.scoreboard.sort(key=lambda x: x[1], reverse=True)
 
     def top(self, count: int = 10):
@@ -39,7 +39,9 @@ class ScoreBoard:
         with open(self.filename, "r") as csvfile:
             csvreader = csv.reader(csvfile)
             for row in csvreader:
+                row[1] = int(row[1])
                 rows.append(row)
+
 
         self.scoreboard = rows
 
@@ -48,13 +50,11 @@ app = Flask(__name__)
 
 
 @app.route("/")
-@cross_origin()
 def index():
     return render_template("scores.html")
 
 
 @app.route("/scoreboard", methods=["GET"])
-@cross_origin()
 def scoreboard_func():
     k1 = request.args.get("len")
     k = 10 if not k1 else k1
@@ -66,7 +66,6 @@ def scoreboard_func():
 
 
 @app.route("/add_record", methods=["POST"])
-@cross_origin()
 def add_func():
     data = request.get_json(force=True)
     print(data)

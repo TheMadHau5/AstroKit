@@ -1,3 +1,4 @@
+
 import cv2
 import mediapipe as mp
 import numpy as np
@@ -5,12 +6,14 @@ from flask import Flask, request, jsonify, render_template, Response
 import json
 import platform
 from typing import Optional
+import requests
 
 # decl glob
 mp_drawing = mp.solutions.drawing_utils
 mp_pose = mp.solutions.pose
 app = Flask(__name__)
 img1 = cv2.imread("static/helmet_redscreen.png")
+scoreboard_server_addr = "http://127.0.0.1:9000"
 
 
 camid = -1
@@ -196,6 +199,15 @@ def update_setting():
         to_run.__init__("curl")
 
     return "success"
+
+@app.route("/submit_score", methods=["POST"])
+def submit_score():
+    data = request.get_json(force=True)
+    requests.post(
+        f'{scoreboard_server_addr}/add_record',
+        json=data
+    )
+    print("New score pushed!")
 
 
 if __name__ == "__main__":
