@@ -2,6 +2,9 @@
 
 Check this project out @ [showcase.codeday.org](https://showcase.codeday.org/project/clkpd0c3n9912667xmyusqasqfi)!
 
+
+Or, check out the submitted code @ [codeday](https://github.com/TheMadHau5/AstroKit/tree/codeday) branch
+
 ## Prerequisites
 - [NodeJS](https://nodejs.org) v16+
 - [Python](https://www.python.org/) v3.11+
