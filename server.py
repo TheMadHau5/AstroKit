@@ -12,8 +12,8 @@ class ScoreBoard:
         if autoload:
             self.load()
 
-    def add_record(self, name, score):
-        self.scoreboard.append([name, score])
+    def add_record(self, name, score, time):
+        self.scoreboard.append([name, score, time])
         self.sort()
         self.flush()
         return self.top()
@@ -61,7 +61,7 @@ def scoreboard_func():
     records = scoreboard.top(count=k)
     return_json = {"records": []}
     for record in records:
-        return_json["records"].append({"name": record[0], "score": record[1]})
+        return_json["records"].append({"name": record[0], "score": record[1], "time": record[2]})
     return return_json
 
 
@@ -69,7 +69,7 @@ def scoreboard_func():
 def add_func():
     data = request.get_json(force=True)
     print(data)
-    scoreboard.add_record(data["name"], int(data["score"]))
+    scoreboard.add_record(data["name"], int(data["score"]), float(data["time"]))
     return "KHATAM"
 
 

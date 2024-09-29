@@ -63,6 +63,7 @@
                             class="h-full bg-gray-800 bg-opacity-40 px-8 py-16 rounded-lg overflow-hidden text-center relative inline-flex justify-center items-center gap-2"
                         >
                             <h3 class="text-2xl font-semibold" id="score"></h3>
+                            <h3 class="text-2xl font-semibold" id="timer"></h3>
                             <img
                                 src="https://www.pngplay.com/wp-content/uploads/8/Space-Astronaut-Transparent-File.png"
                                 id="astronaut"
@@ -138,6 +139,28 @@
                             <span>30</span>
                         </div>
                     </div>
+                    <div
+                        class="p-2 bg-gray-600 text-white scale-110 text-center ease-in-out transition duration-200 rounded-xl inline-block items-center justify-center gap-2"
+                    >
+                        <a class="text-center mb-2">Target Score</a>
+                        <input
+                            type="range"
+                            min="0"
+                            max="1000"
+                            value="300"
+                            class="range"
+                            step="50"
+                            onchange="targetScore(this.value)"
+                        />
+                        <div class="w-full flex justify-between text-xs px-2">
+                            <span>0</span>
+                            <span>200</span>
+                            <span>400</span>
+                            <span>600</span>
+                            <span>800</span>
+                            <span>1000</span>
+                        </div>
+                    </div>
                 </div>
                 <div
                     class="w-1/2 bg-gray-800 bg-opacity-40 px-4 py-10 mb-2 rounded-lg overflow-hidden text-center relative flex"
@@ -146,6 +169,10 @@
                         src="{{ url_for('video') }}"
                         class="w-[90%] mx-auto rounded-2xl -scale-x-100"
                     />
+                    <!-- <video
+                        id="video_feed"
+                        autoplay
+                    /> -->
                 </div>
                 <div class="w-1/4 flex flex-col space-y-10">
                     <button
@@ -159,6 +186,12 @@
                         onclick="nextButton()"
                     >
                         Next
+                    </button>
+                    <button
+                        class="px-4 py-2 bg-gray-700 text-white hover:scale-110 ease-in-out transition duration-200 rounded-xl"
+                        onclick="resetButton()"
+                    >
+                        Restart
                     </button>
                     <!-- You can open the modal using ID.showModal() method -->
                     <button
@@ -200,10 +233,17 @@
             bgm.loop = true;
             let music = true;
             let ireps = 10;
+            let score = 0;
             let exc = null;
             let auto = false;
             let landmarks_debug = false;
             let helmet = false;
+            let timer = {
+                target: 300,
+                start: null,
+                stop: null,
+                interval: null
+            };
             const exercises = {
                 press: "Shoulder Press",
                 latr: "Lateral Raises",
@@ -231,6 +271,16 @@
             "Shoulder Press": "Normal Volleyball is boring (yawn). Today, you’re going to play astronaut volleyball: You play with…comets. You and your astronaut friends love playing astronaut volleyball with these tiny celestial bodies. To practise your volleyball skills, and beat your friends (Mighty Raju, Baba Ramdev, and Tom Cruise), you can do the press exercise."
             };
 
+            async function updateTimer() {
+                document.getElementById("timer").innerHTML = `Time: ${((timer.stop || Date.now()) - timer.start) / 1000}`;
+
+                if (score >= timer.target) {
+                    timer.stop = Date.now();
+                    clearInterval(timer.interval);
+                    timer.interval = null;
+                }
+            }
+
             async function tick() {
                 if (!music) {
                     bgm.pause();
@@ -239,7 +289,8 @@
                 }
                 const response = await fetch('/tick'); // Make an AJAX request to the Flask route that provides direction information
                 const directionInfo = await response.json();
-                let { stance, reps, exercise, score } = directionInfo;
+                let { stance, reps, exercise } = directionInfo;
+                score = directionInfo.score;
                 if (reps >= ireps) {
                     if (auto) return await nextButton();
                 }
@@ -252,6 +303,10 @@
                     document.getElementById('score').innerHTML = `Score: ${score}`;
                     document.getElementById('astronaut').className += ` animate-astronaut-spin`;
                     document.getElementById('score').className += ` ease-in duration-500 transition`;
+                    if (!timer.start && timer.target > 0) {
+                        timer.start = Date.now();
+                        timer.interval = setInterval(updateTimer, 1);
+                    }
                 }
 
                 if (!shown[exercise]) {
@@ -270,6 +325,10 @@
                 tick();
             }
 
+            function targetScore(x) {
+                timer.target = Number(x);
+            }
+
             function nextButton () {
                 const keys = [...Object.keys(exercises)];
                 const index = keys.indexOf(exc);
@@ -283,6 +342,14 @@
                 const newIndex = index == 0 ? keys.length - 1 : (index - 1) % keys.length;
                 const prev = keys[newIndex];
                 updateSetting({exercise: prev});
+            }
+
+            function resetButton () {
+                if (timer.interval) clearInterval(timer.interval);
+                timer.interval = null;
+                timer.stop = null;
+                timer.start = null;
+                updateSetting({score: 0});
             }
 
             function updateSetting(body) {
@@ -324,11 +391,13 @@
                 const directionInfo = await response.json();
                 const { score } = directionInfo;
                 const username = document.getElementById("username").value
+                const time = (timer.stop ? timer.stop - timer.start : 0);
 
                 fetch('/submit_score', {
                     body: JSON.stringify({
                         name: username,
-                        score: score
+                        score: score,
+                        time: time
                     }),
                     method: 'POST',
                     headers: {
@@ -338,6 +407,55 @@
 
                 updateSetting({reset: true});
             }
+
+            /* navigator.mediaDevices
+                .getUserMedia({video: true, audio: false})
+                .then((stream) => {
+                    // stream.getTracks().forEach(track => track.stop());
+                    // window.stream = null;
+                    // window.stream = stream;
+                    const videoTracks = stream.getVideoTracks();
+                    console.log("Got stream with constraints:", constraints);
+                    console.log(`Using video device: ${videoTracks[0].label}`);
+                    stream.onremovetrack = () => {
+                        console.log("Stream ended");
+                    };
+                    video.srcObject = stream;
+                })
+                .catch((error) => {
+                    if (error.name === "OverconstrainedError") {
+                        console.error(
+                            `The resolution ${constraints.video.width.exact}x${constraints.video.height.exact} px is not supported by your device.`,
+                        );
+                    } else if (error.name === "NotAllowedError") {
+                        console.error(
+                            "You need to grant this page permission to access your camera and microphone.",
+                        );
+                    } else {
+                        console.error(`getUserMedia error: ${error.name}`, error);
+                    }
+                });
+
+            function hasUserMedia() {
+               //check if the browser supports the WebRTC
+               return !!(navigator.getUserMedia || navigator.webkitGetUserMedia ||
+                  navigator.mozGetUserMedia);
+            }
+
+            if (hasUserMedia()) {
+               navigator.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia
+                  || navigator.mozGetUserMedia;
+
+               //enabling video and audio channels
+               navigator.getUserMedia({ video: true }, function (stream) {
+                  var video = document.querySelector('#video_feed');
+
+                  //inserting our stream to the video tag
+                  video.src = window.URL.createObjectURL(stream);
+               }, function (err) {});
+            } else {
+               alert("WebRTC is not supported");
+            } */
 
             // Update directions every 1 second
             setInterval(tick, 500);

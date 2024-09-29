@@ -1,9 +1,12 @@
-
 import cv2
 import mediapipe as mp
 import numpy as np
 from flask import Flask, request, jsonify, render_template, Response
+# from aiortc import RTCPeerConnection, RTCSessionDescription
 import json
+# import uuid
+# import asyncio
+import time
 import platform
 from typing import Optional
 import requests
@@ -11,7 +14,7 @@ import requests
 # decl glob
 mp_drawing = mp.solutions.drawing_utils
 mp_pose = mp.solutions.pose
-app = Flask(__name__)
+app = Flask(__name__, static_url_path="/static")
 img1 = cv2.imread("static/helmet_redscreen.png")
 scoreboard_server_addr = "http://127.0.0.1:9000"
 
@@ -197,6 +200,8 @@ def update_setting():
         to_run.helmet = ops["helmet"]
     if "reset" in ops:
         to_run.__init__("curl")
+    if "score" in ops:
+        to_run.score = 0
 
     return "success"
 
