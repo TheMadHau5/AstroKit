@@ -23,14 +23,15 @@ class Pose:
         print("Left  Shoulder:", shoulder_l)
         print("Right Shoulder:", shoulder_r)
 
+
 class Gesture:
-    def __init__(self, name, poses, action = None):
+    def __init__(self, name, poses, action=None):
         self.name = name
         self.poses = poses
         self.action = action
         self.index = 0
 
-    def checkPrev(self, angles):
+    def check_prev(self, angles):
         if self.index is 0:
             return True
         return self.poses[self.index - 1].check(angles)
@@ -38,7 +39,7 @@ class Gesture:
     def check(self, angles):
         return self.poses[self.index].check(angles)
 
-    def isDone(self):
+    def is_done(self):
         return self.index == len(self.poses)
 
     def step(self):
@@ -66,12 +67,12 @@ class GestureManager:
             if gesture.check(angles):
                 do_reset = True
                 gesture.step()
-            elif not gesture.checkPrev(angles):
+            elif not gesture.check_prev(angles):
                 to_reset.append(gesture)
 
-            if gesture.isDone():
+            if gesture.is_done():
                 matched = gesture
-                to_reset = self.gestures # Reset everything
+                to_reset = self.gestures  # Reset everything
                 break
 
         if do_reset:
