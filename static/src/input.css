@@ -1,6 +1,7 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+@tailwind variants;
 
 td {
     @apply text-2xl border-2 border-gray-700 px-10 py-4;

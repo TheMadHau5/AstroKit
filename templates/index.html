@@ -12,31 +12,80 @@
         >
             <div class="px-4 py-10 mx-auto">
                 <div class="flex flex-wrap">
-                    <div class="p-4 lg:w-1/3 items-center justify-center">
+                    <div class="p-4 lg:w-full items-center justify-center">
                         <div
                             class="h-full bg-gray-800 space-y-4 bg-opacity-40 px-8 py-16 rounded-lg overflow-hidden text-center relative items-center justify-center"
                         >
-                            <h3 id="reps" class="text-xl text-gray-300">
-                                Reps: 0/10
-                            </h3>
-                            <progress
-                                class="progress h-10 w-full items-center mx-auto justify-center"
-                                id="progress"
-                                value="0"
-                                max="10"
-                            ></progress>
-                        </div>
-                    </div>
-                    <div class="p-4 lg:w-1/3 items-center justify-center">
-                        <div
-                            class="h-full bg-gray-800 bg-opacity-40 px-8 py-16 rounded-lg overflow-hidden text-center relative items-center justify-center"
-                        >
-                            <h1
-                                class="title-font text-4xl font-semibold text-white mb-3"
-                                id="title"
-                            >
-                                Exercise
-                            </h1>
+                            <div class="columns-2">
+                                <div>
+                                    <h2
+                                        class="title-font text-2xl font-semibold text-white mb-3"
+                                        id="title"
+                                    >
+                                        Bicep Curls
+                                    </h2>
+                                    <h3 id="reps1" class="text-xl text-gray-300">
+                                        Reps: 0/10
+                                    </h3>
+                                    <progress
+                                        class="progress h-10 w-full items-center mx-auto justify-center"
+                                        id="progress1"
+                                        value="0"
+                                        max="10"
+                                    ></progress>
+                                </div>
+                                <div>
+                                    <h2
+                                        class="title-font text-2xl font-semibold text-white mb-3"
+                                        id="title"
+                                    >
+                                        Jumping Jacks
+                                    </h2>
+                                    <h3 id="reps2" class="text-xl text-gray-300">
+                                        Reps: 0/10
+                                    </h3>
+                                    <progress
+                                        class="progress h-10 w-full items-center mx-auto justify-center"
+                                        id="progress2"
+                                        value="0"
+                                        max="10"
+                                    ></progress>
+                                </div>
+                                <div>
+                                    <h2
+                                        class="title-font text-2xl font-semibold text-white mb-3"
+                                        id="title"
+                                    >
+                                        Shoulder Press
+                                    </h2>
+                                    <h3 id="reps3" class="text-xl text-gray-300">
+                                        Reps: 0/10
+                                    </h3>
+                                    <progress
+                                        class="progress h-10 w-full items-center mx-auto justify-center"
+                                        id="progress3"
+                                        value="0"
+                                        max="10"
+                                    ></progress>
+                                </div>
+                                <div>
+                                    <h2
+                                        class="title-font text-2xl font-semibold text-white mb-3"
+                                        id="title"
+                                    >
+                                        Lateral Raises
+                                    </h2>
+                                    <h3 id="reps4" class="text-xl text-gray-300">
+                                        Reps: 0/10
+                                    </h3>
+                                    <progress
+                                        class="progress h-10 w-full items-center mx-auto justify-center"
+                                        id="progress4"
+                                        value="0"
+                                        max="10"
+                                    ></progress>
+                                </div>
+                            </div>
                             <div
                                 class="flex flex-row items-center justify-center text-center gap-x-4"
                             >
@@ -51,6 +100,15 @@
             <div
                 class="p-2 w-[90%] mx-auto flex space-x-20 items-center justify-center"
             >
+                <div class="w-1/4 flex flex-col space-y-10"></div>
+                <div
+                    class="w-1/2 bg-gray-800 bg-opacity-40 px-4 py-10 mb-2 rounded-lg overflow-hidden text-center relative flex"
+                >
+                    <img
+                        src="{{ url_for('video') }}"
+                        class="w-[90%] mx-auto rounded-2xl -scale-x-100"
+                    />
+                </div>
                 <div class="w-1/4 flex flex-col space-y-5">
                     <button
                         class="p-2 bg-gray-600 text-white scale-110 ease-in-out transition duration-200 inline-flex rounded-xl items-center justify-between gap-2"
@@ -59,17 +117,7 @@
                         <input
                             type="checkbox"
                             class="toggle toggle-success"
-                            onchange="toggleLandmarks()"
-                        />
-                    </button>
-                    <button
-                        class="p-2 bg-gray-600 text-white scale-110 ease-in-out transition duration-200 inline-flex rounded-xl items-center justify-between gap-2"
-                    >
-                        <a class="mr-auto">Auto Switch Exercise</a>
-                        <input
-                            type="checkbox"
-                            class="toggle toggle-success ml-auto"
-                            onchange="setAuto()"
+                            onchange="toggleWireframe()"
                         />
                     </button>
                     <div
@@ -95,76 +143,39 @@
                         </div>
                     </div>
                 </div>
-                <div
-                    class="w-1/2 bg-gray-800 bg-opacity-40 px-4 py-10 mb-2 rounded-lg overflow-hidden text-center relative flex"
-                >
-                    <img
-                        src="{{ url_for('video') }}"
-                        class="w-[90%] mx-auto rounded-2xl -scale-x-100"
-                    />
-                </div>
-                <div class="w-1/4 flex flex-col space-y-10">
-                    <button
-                        class="px-4 py-2 bg-gray-700 text-white hover:scale-110 ease-in-out transition duration-200 rounded-xl"
-                        onclick="prevButton()"
-                    >
-                        Previous
-                    </button>
-                    <button
-                        class="px-4 py-2 bg-gray-700 text-white hover:scale-110 ease-in-out transition duration-200 rounded-xl"
-                        onclick="nextButton()"
-                    >
-                        Next
-                    </button>
-                    <!-- You can open the modal using ID.showModal() method -->
-                </div>
             </div>
         </section>
         <script>
             let ireps = 10;
-            let exc = null;
             let auto = false;
-            let landmarks_debug = false;
+            let wireframe = false;
             const exercises = {
+                curls: "Bicep Curls",
+                jacks: "Jumping Jacks",
                 press: "Shoulder Press",
-                latr: "Lateral Raises",
-                curls: "Bicep Curl",
-                jacks: "Jumping Jacks"
+                latr: "Lateral Raises"
             };
 
             async function tick() {
                 const response = await fetch('/tick'); // Make an AJAX request to the Flask route that provides direction information
                 const directionInfo = await response.json();
-                let { stance, reps, exercise } = directionInfo;
+                let { stance, reps } = directionInfo;
                 if (reps >= ireps) {
                     if (auto) return await nextButton();
                 }
-                document.getElementById('title').innerHTML = exercises[exercise];
-                exc = exercise;
                 document.getElementById('stance').innerHTML = `Stance: ${stance ? stance : 'N/A'}`;
-                document.getElementById('reps').innerHTML = `Sets: ${Math.floor(reps / ireps)} Reps: ${reps % ireps}/${ireps}`;
-                document.getElementById('progress').value = (reps % ireps).toString();
+                for (let i = 0; i < 4; i++) {
+                    document.getElementById('reps' + (i+1)).innerHTML = `Sets: ${Math.floor(reps[i] / ireps)} Reps: ${reps[i] % ireps}/${ireps}`;
+                    document.getElementById('progress' + (i+1)).value = (reps[i] % ireps).toString();
+                }
             }
 
             function repsPerSet(x) {
                 ireps = x;
-                document.getElementById('progress').max = ireps.toString();
+                for (let i = 0; i < 4; i++) {
+                    document.getElementById('progress' + (i+1)).max = ireps.toString();
+                }
                 tick();
-            }
-
-            function nextButton () {
-                const keys = [...Object.keys(exercises)];
-                const index = keys.indexOf(exc);
-                const next = keys[(index + 1) % keys.length];
-                updateSetting({exercise: next});
-            }
-
-            function prevButton () {
-                const keys = [...Object.keys(exercises)];
-                const index = keys.indexOf(exc);
-                const newIndex = index == 0 ? keys.length - 1 : (index - 1) % keys.length;
-                const prev = keys[newIndex];
-                updateSetting({exercise: prev});
             }
 
             function updateSetting(body) {
@@ -175,7 +186,6 @@
                         'Content-Type': 'application/json'
                     }
                 });
-
                 tick();
             }
 
@@ -183,13 +193,13 @@
                 auto = !auto;
             }
 
-            function toggleLandmarks() {
-                landmarks_debug = !landmarks_debug;
-                updateSetting({landmarks_debug});
+            function toggleWireframe() {
+                wireframe = !wireframe;
+                updateSetting({wireframe});
             }
 
             // Update directions every 1 second
-            setInterval(tick, 500);
+            setInterval(tick, 1000);
         </script>
     </body>
 </html>

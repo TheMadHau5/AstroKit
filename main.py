@@ -25,25 +25,25 @@ curl = Pose("curl", ((-20, 20), (-20, 20), (-20, 20), (-20, 20)))
 hands_up = Pose("hands up", ((160, -160), (160, -160), (160, -160), (160, -160)))
 t_pose = Pose("t-pose", ((140, -140), (140, -140), (70, 110), (70, 110)))
 
-jacks = Gesture("jacks", [stand, hands_up])
 curls = Gesture("curls", [stand, curl])
+jacks = Gesture("jacks", [stand, t_pose, hands_up])
 press = Gesture("press", [hands_up, curl])
-latr = Gesture("latr", [stand, t_pose])
+latr = Gesture("latr", [stand, t_pose, stand])
 
 gman = GestureManager([jacks, curls, press, latr])
 
 
 class Exercise:
-    def __init__(self, exercise=None):
-        self.landmarks_debug = False #TODO Rename to wireframe
-        self.set_exercise(exercise)
-
-    def set_exercise(self, exercise):
-        self.reps = 0
-        self.exercise = exercise
+    def __init__(self):
+        self.wireframe = False
+        self.reps = [0, 0, 0, 0]
         self.stance = None
-        def increment(): self.reps += 1
-        self.gman = GestureManager([Gesture(gesture.name, gesture.poses, increment) for gesture in gman.gestures if gesture.name == exercise]) #TODO Allow all
+        def increment(i): self.reps[i] += 1
+        curls = Gesture("curls", [stand, curl], lambda: increment(0))
+        jacks = Gesture("jacks", [stand, t_pose, hands_up], lambda: increment(1))
+        press = Gesture("press", [hands_up, curl], lambda: increment(2))
+        latr = Gesture("latr", [stand, t_pose, stand], lambda: increment(3))
+        self.gman = GestureManager([jacks, curls, press, latr])
 
     def update(self, elbow_angle_l, elbow_angle_r, shoulder_angle_l, shoulder_angle_r):
         angles = (elbow_angle_l, elbow_angle_r, shoulder_angle_l, shoulder_angle_r)
@@ -89,7 +89,7 @@ def generate_frames():
                 elbow_r = landmarks[mp_pose.PoseLandmark.RIGHT_ELBOW.value]
                 wrist_r = landmarks[mp_pose.PoseLandmark.RIGHT_WRIST.value]
 
-                # Calculate angle
+                # Calculate angles
                 elbow_angle_l = calculate_angle(wrist_l, elbow_l, shoulder_l)
                 elbow_angle_r = calculate_angle(shoulder_r, elbow_r, wrist_r)
                 shoulder_angle_l = calculate_angle(elbow_l, shoulder_l, hip_l)
@@ -102,21 +102,21 @@ def generate_frames():
                 print(e)
 
             # Render detections
-            if to_run.landmarks_debug:
+            if to_run.wireframe:
                 mp_drawing.draw_landmarks(
                     frame, results.pose_landmarks, mp_pose.POSE_CONNECTIONS,
                     mp_drawing.DrawingSpec(color=(192, 128, 64), thickness=2, circle_radius=2),
                     mp_drawing.DrawingSpec(color=(192, 64, 192), thickness=2, circle_radius=2)
                 )
 
-            ret, buffer = cv2.imencode(".jpg",frame) #TODO make webp
+            ret, buffer = cv2.imencode(".png", frame)
             frame = buffer.tobytes()
-            yield (b"--frame\r\nContent-Type: image/jpeg\r\n\r\n" + frame + b"\r\n")
+            yield (b"--frame\r\nContent-Type: image/png\r\n\r\n" + frame + b"\r\n")
 
         cap.release()
 
 
-to_run = Exercise("curls")
+to_run = Exercise()
 
 @app.route("/")
 def index():
@@ -135,10 +135,8 @@ def video():
 @app.route("/update_setting", methods=["POST"])
 def update_setting():
     ops = request.get_json(force=True)
-    if "exercise" in ops:
-        to_run.set_exercise(ops["exercise"])
-    if "landmarks_debug" in ops:
-        to_run.landmarks_debug = ops["landmarks_debug"]
+    if "wireframe" in ops:
+        to_run.wireframe = ops["wireframe"]
     return "success"
 
 if __name__ == "__main__":
