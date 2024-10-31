@@ -1,3 +1,5 @@
+from gesture import *
+
 import cv2
 import mediapipe as mp
 import numpy as np
@@ -25,50 +27,59 @@ if platform.system() == "Darwin":
 
 cap = cv2.VideoCapture(camid)
 
+
+
+stand = Pose("stand", ((160, -160), (160, -160), (-20, 20), (-20, 20)))
+curl = Pose("curl", ((-20, 20), (-20, 20), (-20, 20), (-20, 20)))
+hands_up = Pose("hands up", ((160, -160), (160, -160), (160, -160), (160, -160)))
+t_pose = Pose("t-pose", ((140, -140), (140, -140), (70, 110), (70, 110)))
+
+jacks = Gesture("jacks", [stand, hands_up])
+curls = Gesture("curls", [stand, curl])
+press = Gesture("press", [hands_up, curl])
+latr = Gesture("latr", [stand, t_pose])
+
+gman = GestureManager([jacks, curls, press, latr])
+
+
+
 class Exercise:
     def __init__(self, exercise: Optional[str] = None):
-        self.exercise = exercise
-        self.reps = 0
         self.score = 0
-        self.last_stance = None
-        self.stance = None
         self.landmarks_debug = False
         self.helmet = False
+        self.set_exercise(exercise)
 
     def set_exercise(self, exercise):
         self.reps = 0
         self.exercise = exercise
         self.last_stance = None
         self.stance = None
+        self.gman = GestureManager([Gesture(gesture.name, gesture.poses, lambda: self.increment()) for gesture in gman.gestures if gesture.name == exercise])
   
-    def set_stance(self,elbow_angle_l, elbow_angle_r, shoulder_angle_l, shoulder_angle_r):
+    def increment(self):
+        self.reps += 1
+        self.score += 10
 
-        if abs(shoulder_angle_l) < 20 and abs(shoulder_angle_r) < 20:
-            if abs(elbow_angle_l) > 160 and abs(elbow_angle_r) > 160:
-                self.stance = "stand"
-            elif abs(elbow_angle_l) < 20 and abs(elbow_angle_r) < 20:
-                self.stance = "curl"
-        elif abs(shoulder_angle_l) > 160 and abs(shoulder_angle_r) > 160 and abs(elbow_angle_l) > 160 and abs(elbow_angle_r) > 160:
-            self.stance = "hands up"
-        elif self.exercise != "jack" and 110 > shoulder_angle_l > 70 and 110 > shoulder_angle_r > 70 and abs(elbow_angle_l) > 140 and abs(elbow_angle_r) > 140:
-            self.stance = "t pose"
-        
+    def update(self, elbow_angle_l, elbow_angle_r, shoulder_angle_l, shoulder_angle_r):
+        angles = (elbow_angle_l, elbow_angle_r, shoulder_angle_l, shoulder_angle_r)
+        if stand.check(angles):
+            self.stance = stand.name
+        if curl.check(angles):
+            self.stance = curl.name
+        if hands_up.check(angles):
+            self.stance = hands_up.name
+        if t_pose.check(angles) and self.exercise != "jacks":
+            self.stance = t_pose.name
 
-    def count_reps(self):
-        if self.stance and self.stance != self.last_stance:
-            if self.exercise == "jack" and self.last_stance == "stand" and self.stance == "hands up":
-                self.reps += 1
-                self.score += 10
-            elif self.exercise == "curl" and self.last_stance == "stand" and self.stance == "curl":
-                self.reps += 1
-                self.score += 10
-            elif self.exercise == "press" and self.last_stance == "hands up" and self.stance == "curl":
-                self.reps += 1
-                self.score += 10
-            elif self.exercise == "latr" and self.last_stance == "stand" and self.stance == "t pose":
-                self.reps += 1
-                self.score += 10
-        self.last_stance = self.stance
+        matched = self.gman.match(angles)
+        if matched:
+            matched.action()
+
+        if self.stance != self.last_stance:
+            print(self.stance, "from", self.last_stance)
+            print(angles)
+            self.last_stance = self.stance
 
 def calculate_angle(a, b, c):
     radians = np.pi + np.arctan2(c.y - b.y, c.x - b.x) - np.arctan2(b.y - a.y, b.x - a.x)
@@ -78,24 +89,19 @@ def calculate_angle(a, b, c):
     return angle
 
 
-to_run = Exercise("curl")
+to_run = Exercise("curls")
 
 
 def generate_frames():
-    with mp_pose.Pose(min_detection_confidence=0.5, min_tracking_confidence=0.5) as pose:
+    with mp_pose.Pose(static_image_mode=False, model_complexity=1, enable_segmentation=False, min_detection_confidence=0.5, min_tracking_confidence=0.5) as pose:
         while cap.isOpened():
             ret, frame = cap.read()
 
-            # Recolor image to RGB
-            image = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-            image.flags.writeable = False
-
             # Make detection
-            results = pose.process(image)
+            results = pose.process(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
 
             # Recolor back to BGR
-            image.flags.writeable = True
-            image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
+            image = frame
 
             # Extract landmarks
             try:
@@ -116,7 +122,8 @@ def generate_frames():
                 elbow_angle_r = calculate_angle(shoulder_r, elbow_r, wrist_r)
                 shoulder_angle_l = calculate_angle(elbow_l, shoulder_l, hip_l)
                 shoulder_angle_r = calculate_angle(hip_r, shoulder_r, elbow_r)
-                
+                angles = (elbow_angle_l, elbow_angle_r, shoulder_angle_l, shoulder_angle_r)
+
                 if to_run.helmet:
                     print()
                     nose = landmarks[mp_pose.PoseLandmark.NOSE.value]
@@ -146,8 +153,7 @@ def generate_frames():
                     img_copy[crop_y1:crop_y2, crop_x1:crop_x2][~red_mask] = cropped_region[~red_mask]
                     image = img_copy
 
-                to_run.set_stance(elbow_angle_l, elbow_angle_r, shoulder_angle_l, shoulder_angle_r)
-                to_run.count_reps()
+                to_run.update(elbow_angle_l, elbow_angle_r, shoulder_angle_l, shoulder_angle_r)
 
             except AttributeError: 
                 pass
@@ -175,7 +181,7 @@ def index():
 
 @app.route("/tick")
 def directions_func():
-    return json.dumps(to_run.__dict__)
+    return json.dumps({i: to_run.__dict__[i] for i in to_run.__dict__ if i != "gman"})
 
 
 @app.route("/video")
@@ -199,7 +205,7 @@ def update_setting():
     if "helmet" in ops:
         to_run.helmet = ops["helmet"]
     if "reset" in ops:
-        to_run.__init__("curl")
+        to_run.__init__("curls")
     if "score" in ops:
         to_run.score = 0
 
@@ -214,6 +220,10 @@ def submit_score():
     )
     print("New score pushed!")
 
+for pose in [stand, curl, hands_up, t_pose]:
+    pose.show()
+for gesture in [jacks, curls, press, latr]:
+    gesture.show()
 
 if __name__ == "__main__":
     app.run()
